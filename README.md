@@ -56,7 +56,7 @@ slope stability. Spatial cross-validation in Step 3 is designed to catch this.
 - [x] Figure 2: conditioning factors
 - [x] Step 2: Landslide inventory: 300 candidates reviewed, 38 landslides after deduplication (`02_landslide_inventory.ipynb`)
 - [x] Figure 3: landslide inventory map
-- [ ] Step 3: Train random forest + spatial cross-validation ← **next**
+- [ ] Step 3: Train random forest + spatial cross-validation ← **in progress**
 - [ ] Step 4: Add monsoon rainfall
 - [ ] Step 5: Interactive map on GitHub Pages
 - [ ] Step 6: Technical write-up and comparison with published studies
@@ -79,7 +79,7 @@ slope stability. Spatial cross-validation in Step 3 is designed to catch this.
 |---|---|
 | `01_build_features.ipynb` | Builds the 6 conditioning factors in Earth Engine and makes Figure 2 |
 | `02_landslide_inventory.ipynb` | Removes duplicate landslides, samples no-landslide points, makes Figure 3 |
-| `data/training_points.geojson` | 76 training points (label 1 = landslide, 0 = no landslide), EPSG:32644 |
+| `data/training_points_wgs84.geojson` | 76 training points (label 1 = landslide, 0 = no landslide), lat/lon (EPSG:4326) |
 | `data/landslide_review_rudraprayag.geojson` | All 299 saved review decisions (yes / no / unsure) with candidate ID and patch area |
 | `figures/` | Figures for the paper |
 | `notes.md` | Running log of every decision, problem and fix |
@@ -101,3 +101,7 @@ slope stability. Spatial cross-validation in Step 3 is designed to catch this.
 - Grill, G. et al. (2019). Mapping the world's free-flowing rivers. *Nature*, 569, 215–221.
 - FAO (2025). Global Administrative Unit Layers (GAUL) 2025. CC-BY-4.0.
 - Rouse, J. W. et al. (1974). Monitoring vegetation systems in the Great Plains with ERTS (NDVI).
+
+## Acknowledgements
+
+Code scaffolding and project planning developed with help from Claude (Anthropic).
