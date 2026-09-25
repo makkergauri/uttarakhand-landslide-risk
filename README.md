@@ -33,7 +33,7 @@ Knowing which slopes are most vulnerable helps decide where to monitor, reinforc
 
 - [x] Step 1: Build feature stack in Google Earth Engine (`01_build_features.ipynb`)
 - [x] Figure 2: conditioning factors
-- [ ] Step 2: Landslide inventory (candidate review in progress, ~330 candidates)
+- [x] Step 2: Landslide inventory: 300 candidates reviewed, 42 landslides verified
 - [ ] Step 3: Train random forest + spatial cross-validation
 - [ ] Step 4: Add monsoon rainfall
 - [ ] Step 5: Interactive map on GitHub Pages
