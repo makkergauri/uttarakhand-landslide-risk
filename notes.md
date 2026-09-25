@@ -1,166 +1,45 @@
-# Project Notes
+# notes.md: Landslide susceptibility mapping, Rudraprayag
 
-Running log of decisions, problems and fixes. Used for writing the Methods section later.
+## Step 1: Feature stack (notebook 01_build_features)
+- Boundary: FAO/GAUL/2025/level2, ISO3_CODE == "IND", GAUL2_NAME contains "Rudra". (GAUL 2015 is deprecated and uses old names like "Uttaranchal".)
+- Elevation, slope, aspect: SRTM USGS/SRTMGL1_003.
+- NDVI: COPERNICUS/S2_SR_HARMONIZED, Oct 2024–Mar 2025, <20% cloud, median, (B8−B4)/(B8+B4).
+- Land cover: ESA/WorldCover/v200.
+- Distance to river: WWF/HydroSHEDS/v1/FreeFlowingRivers, rivers within AOI buffered 20 km, distance(searchRadius=20000).
+- Export: rudraprayag_features.tif, bands 1 elevation, 2 slope, 3 aspect, 4 ndvi, 5 landcover, 6 dist_river. 30 m, EPSG:32644, outside district = 0.
+- geemap: OpenStreetMap tiles blocked in Colab (403), used Esri World Imagery / HYBRID.
+- Figure 2: 6 panels, read at 60 m, outside masked via elevation == 0, official WorldCover colours, scale bars, north arrow, PNG 300 dpi + PDF.
+- Observations: elevation ~700 m (south) to ~7,000 m (north); most slopes 25–45°; dense vegetation mid-district; snow/ice/rock in north.
 
----
+## Step 2: Landslide inventory
+### Data access failures
+- GSI Bhukosh (bhukosh.gsi.gov.in): not loading. Retry later; if it works, use as independent validation.
+- NASA COOLR: event layers on gis.earthdata.nasa.gov 404; maps.nccs.nasa.gov unreachable; COOLR_Reports_Points query nginx 404 from Colab and browser.
+- Manual scar hunting: found one landslide near Sonprayag–Gaurikund, far too slow.
 
-## Step 1: Feature stack (25 Sept 2026)
+### Semi-automatic inventory (Code Editor script review_candidates)
+- Candidates: Sentinel-2 Oct–Dec 2025 NDVI < 0.2 AND slope > 25° AND not WorldCover 70/80 AND elevation < 3500 m. reduceToVectors at 20 m, patches 0.2–20 ha → 330 candidates.
+- Random sample of 300 (randomColumn seed 42), reviewed at zoom 17 on Google satellite imagery (yes / no / unsure / back / save + backup box).
+- Result: 300 reviewed → 42 yes, 190 no, 68 unsure (precision ≈ 18%). Drive export has 299 of 300 (last "unsure" not saved, no effect).
+- Decision rules: stream beds/gullies, buildings, construction, roads, riverbeds, white water, cliffs in shadow → no; plain road cuts → no/unsure; bright clean bare patch cut into forest with sharp edge spreading downhill, streamside slides, boulder fans fed by steep channels (debris flows) → yes; dull brown bushy or alpine brown slopes, duplicates → unsure; zoom out 2 levels when in doubt; >30 s undecided → unsure.
+- Lessons: page reloads lost ~130 decisions once; top Run button restarts the tool; unsaved export tasks and Console vanish on reload. Fixed with backup box + Google Doc backups + Save → Tasks → RUN.
 
-### Study area
-- Chose **Rudraprayag district** instead of all of Uttarakhand, to keep things fast to iterate on.
-- Reasons: very landslide-prone, on the Kedarnath route, already studied in published papers I can compare against.
-- Boundary from **FAO GAUL 2025 level 2** (`FAO/GAUL/2025/level2`).
-  - First tried GAUL 2015, but it's deprecated and didn't find the district by name (it uses old names like "Uttaranchal").
-  - Searching with `stringContains("GAUL2_NAME", "Rudra")` so small spelling differences don't break it.
-  - Official Rudraprayag boundary found with GAUL 2025.
+### Notebook 02_landslide_inventory
+- Dedupe: kept one "yes" point within 200 m → 42 → 38 landslides (99 and 108 duplicate 13; 167 duplicates 88; 179 duplicates 143).
+- No-landslide points: random pixels (seed 42), elevation < 3500 m, not WorldCover 70/80, ≥ 500 m from any landslide, 1:1 → 38 points.
+- Confirmed counts (2026-09-25): 38 landslides, 38 no-landslide, 76 total.
+- Saved training_points.geojson (EPSG:32644, label 1 = landslide, 0 = no landslide).
+- Figure 3: grey elevation (darker = higher), red triangles = landslides, black dots = no-landslide, legend with n, scale bar, north arrow, PNG 300 dpi + PDF. Added district outline because low southern valleys blended into the white background.
 
-### Conditioning factors
-| Factor | Dataset | Why it matters |
-|---|---|---|
-| Elevation | NASA SRTM 30 m (`USGS/SRTMGL1_003`) | base terrain |
-| Slope | derived from SRTM | steeper = more likely to fail, usually the strongest factor |
-| Aspect | derived from SRTM | direction a slope faces affects sunlight, moisture, vegetation |
-| NDVI | Sentinel-2 SR Harmonized | roots stabilise soil, bare slopes are weaker |
-| Land cover | ESA WorldCover v200 (10 m) | forest vs cropland vs built-up vs bare rock |
-| Distance to river | WWF HydroSHEDS Free Flowing Rivers | rivers erode the base of slopes (toe erosion) |
+### Observed spatial pattern (Figure 3)
+- Landslides cluster in the north (upper Mandakini valley); no-landslide points are more spread and more common in the south, because more of the area below 3,500 m is in the south.
+- Possible causes: genuine concentration along the Kedarnath route, and/or detection bias (bare patches easier to spot in sparser northern terrain).
+- Risk: the model may learn location/elevation rather than slope stability. Spatial CV in Step 3 should expose this; discuss in the paper.
 
-### Processing choices
-- **NDVI date range: Oct 2024 to Mar 2025**, because monsoon (Jun to Sep) imagery is almost all cloud.
-  - Filtered to scenes with less than 20% cloud, then took the **median** composite to remove leftover clouds.
-  - NDVI = (B8 − B4) / (B8 + B4), i.e. (NIR − Red) / (NIR + Red).
-- **Rivers:** buffered the study area by 20 km before selecting rivers, so rivers just outside the boundary still count for distance.
-- **Export:** 30 m resolution, **EPSG:32644 (UTM zone 44N)** so units are metres. Exported to Google Drive as `rudraprayag_features.tif`.
-
-### Problems and fixes
-- geemap's default OpenStreetMap background tiles were blocked in Colab (403 "Access blocked").
-  Switched to Esri World Imagery as the basemap, which also suits a terrain project better.
-- GAUL 2015 deprecation warning, fixed by moving to GAUL 2025.
-- Land cover panel first used a continuous colorbar, which is wrong for categorical data.
-  Replaced with official ESA WorldCover colours and a labelled legend.
-
-### Figure 2 made
-- 6-panel conditioning factors figure, read from the exported GeoTIFF at 60 m (half resolution) for speed.
-- Saved as PNG (300 dpi) and PDF in Drive under `landslide_project/figures/`.
-- Pixels outside the district are exported as 0, masked as NaN using elevation == 0 (no real pixel is at 0 m here).
-- Added to GitHub in `figures/` and shown in the README.
-
-### First observations (for Results / Discussion)
-- Elevation ranges from ~700 m in the southern river valleys to ~7,000 m in the north (Kedarnath peaks).
-- Most of the district has slopes between 25 and 45 degrees.
-- Dense vegetation (high NDVI) through the middle; snow, ice and bare rock in the north.
-- **Idea for Step 3:** the high-altitude snow/ice zone behaves differently and has few settlements.
-  Consider excluding permanent snow and ice (WorldCover class 70) from the model, as many studies do.
-
----
-
-## Step 2: Landslide inventory (25 Sept 2026)
-
-### Data access problems
-- **GSI Bhukosh portal** (bhukosh.gsi.gov.in) wasn't loading (tried 25 Sept 2026). Government portals go down often; retrying occasionally.
-- **NASA COOLR** (Cooperative Open Online Landslide Repository) was the backup source:
-  - Events layers (points and polygons) on gis.earthdata.nasa.gov returned 404, probably after NASA's Earthdata GIS system upgrade.
-  - maps.nccs.nasa.gov was unreachable from Colab ("Network is unreachable").
-  - Reports Points layer: the layer info page opened, but every query returned an nginx 404,
-    both from Colab and from my own browser. So the query service is down, not just blocked for Colab.
-- Conclusion: no existing inventory was accessible, so I built my own.
-
-### First attempt: manual hunting (abandoned)
-- Tried finding scars by hand in the Earth Engine Code Editor
-  (repository `users/makkergauri/landslide_uttarakhand`, script `map_landslides`).
-- Found the first landslide (debris track near Sonprayag–Gaurikund on the Kedarnath route),
-  but it was far too slow to reach 100+ points.
-
-### Method: semi-automatic inventory (candidate detection + manual verification)
-- Script `review_candidates` in `users/makkergauri/landslide_uttarakhand`.
-  1. **Automatic candidates:** pixels with NDVI < 0.2 (Sentinel-2, Oct–Dec 2025), slope > 25°,
-     not snow/ice or water (ESA WorldCover 70, 80), elevation < 3500 m (above the treeline bare rock is natural).
-     Converted to patches with `reduceToVectors` at 20 m; kept patches of 0.2–20 ha.
-     Result: **330 candidate patches** in the district.
-  2. **Manual verification:** random sample of 300 patches (seed 42), each reviewed on high-resolution
-     Google imagery at zoom 17 and labelled yes / no / unsure.
-- Landslide points = centroid of each patch labelled "yes".
-- "No" patches are also kept: they are verified non-landslides and can be used as negative examples.
-- Exported as GeoJSON to Drive (`landslide_review_rudraprayag`).
-
-### Review sessions
-- **Session 1:** first 10 candidates → 3 yes, 6 no, 1 unsure. Saved and exported.
-- **Session 2:** page reloaded after candidate 10 and unsaved answers were lost.
-- **Session 3:** reviewed 140 candidates, but the page reloaded again and only the first 10
-  had been exported to Drive (the other Save clicks created tasks that were never RUN, and the Console is
-  cleared on reload). Lost ~130 decisions.
-- **Fix:** added an always-visible backup box to the review tool showing the latest decisions as JSON.
-  Copying it to a Google Doc every 10 candidates, turned off Chrome Memory Saver, and only clicking the
-  script's Run button at the start of a session (it restarts the tool). Exporting via Save → Tasks tab → RUN.
-- **Session 4:** after more reloads, an export saved candidates 1–119 (17 yes, 87 no, 15 unsure). Resumed from 120.
-- **Session 5:** continued with regular backups: 176 → 189 → 214 → 230 → 247 → 258 → 277 → 300.
-- **Final:** all 300 candidates reviewed → **42 yes, 190 no, 68 unsure.**
-  - Precision of the candidate filter = 42 / (42 + 190) ≈ **18%**.
-  - Some "yes" candidates are very close together (e.g. candidates 13, 99 and 108 are within ~150 m),
-    so duplicates must be removed before modelling.
-  - Final export: `landslide_review_rudraprayag.geojson` in Drive (`landslide_project`).
-- 42 landslides is a small inventory for machine learning. Treat it as a **preliminary inventory**.
-  Options to grow it: review the remaining 30 candidates (change the sample limit from 300 to 400),
-  loosen the candidate filter, or add GSI points if Bhukosh comes back.
-
-### Decision rules I settled on while reviewing
-- stream beds and gullies (grey strips in valley bottoms, same width all the way, joining other channels) → no
-- buildings, construction sites, roads, riverbeds, white water → no
-- plain road cut with no debris on the road and no bowl-shaped scar → no / unsure
-- rock cliffs and ridge edges in shadow → no
-- bright, clean bare patch cut into forest, sharp edge, spreading downhill → yes
-- bare slope collapsing into a stream (streamside slide) → yes
-- huge boulder fan much wider than a normal stream, fed by a steep channel (debris-flow deposit) → yes
-- dull brown slope with scattered bushes, or high alpine brown terrain → unsure
-- same landslide as an earlier candidate → unsure (avoids counting one landslide twice)
-- zoom out 2 levels when the outline sits inside a bigger bare area
-- more than 30 seconds without a clear answer → unsure
-
-### Limitations (for the paper)
-- No field verification; single interpreter (me), so some subjectivity.
-- Only landslides that were still bare in late 2025 and larger than 0.2 ha can be found,
-  so older revegetated and very small landslides are under-represented.
-- Small inventory (42 before removing duplicates).
-- Landslide points are patch centroids, not initiation points (top of the scar).
-- **Possible circularity:** candidates were found using low NDVI and steep slope, and NDVI and slope are also
-  model features. This could make those two features look more important than they are.
-  To check in Step 3: compare the model with and without NDVI.
-- If Bhukosh comes back, use GSI points as an independent check of my inventory.
-
----
-
-## To do next
-- [x] Step 1: feature stack exported
-- [x] Figure 2 generated and added to GitHub and README
-- [x] Step 2: review tool built
-- [x] Step 2: all 300 candidates reviewed, final results exported
-- [ ] Step 2: Colab notebook `02_landslide_inventory`: load results, remove duplicates,
-      generate "no landslide" points, make Figure 3
-- [ ] Decide whether to grow the inventory (last 30 candidates / looser filter)
-- [ ] Step 3: random forest + spatial cross-validation + NDVI circularity check
-- [ ] Keep retrying Bhukosh
-
-## Figures planned for the paper
-1. Study area map (location within India and Uttarakhand)
-2. Conditioning factors panel (6 layers) ← done
-3. Landslide inventory map
-4. Model evaluation (ROC curve, feature importance)
-5. Final susceptibility map
-6. Rainfall and monsoon risk analysis
-
----
-
-## Data citations
-(Check each dataset's Earth Engine catalog page for the exact citation format before the paper.)
-- **SRTM:** Farr, T. G. et al. (2007). The Shuttle Radar Topography Mission. *Reviews of Geophysics*, 45.
-- **Sentinel-2:** Contains modified Copernicus Sentinel data (2024–2025), ESA.
-- **ESA WorldCover:** Zanaga, D. et al. (2022). ESA WorldCover 10 m 2021 v200. doi:10.5281/zenodo.7254221
-- **HydroSHEDS Free Flowing Rivers:** Grill, G. et al. (2019). Mapping the world's free-flowing rivers. *Nature*, 569, 215–221.
-- **FAO GAUL:** FAO (2025). Global Administrative Unit Layers (GAUL). Licence: CC-BY-4.0.
-- **NDVI:** Rouse, J. W. et al. (1974). Monitoring vegetation systems in the Great Plains with ERTS.
-
-### Only if GSI or NASA data ends up being used
-- **GSI:** Geological Survey of India, Bhukosh landslide inventory (bhukosh.gsi.gov.in), accessed ____.
-- **COOLR:** Juang, C. S., Stanley, T. A., & Kirschbaum, D. B. (2019). Using citizen science to expand the global map
-  of landslides: Introducing the Cooperative Open Online Landslide Repository (COOLR). *PLOS ONE*, 14(7), e0218657.
-- **NASA GLC:** Kirschbaum, D. B., Stanley, T., & Zhou, Y. (2015). Spatial and temporal analysis of a global landslide catalog.
-  *Geomorphology*, 249, 4–15.
+### Known limitations
+- No field verification; single interpreter.
+- Only landslides still bare in late 2025 and > 0.2 ha detectable.
+- Small inventory (38) → preliminary.
+- Points are patch centroids, not initiation points.
+- Circularity: candidates selected by low NDVI + steep slope, which are also model features → compare model with and without NDVI in Step 3.
+- Options to grow inventory: review remaining 30 candidates (change limit to 400), loosen candidate filter, GSI/ULMMC data.
