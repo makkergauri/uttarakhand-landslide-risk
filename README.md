@@ -4,7 +4,7 @@
 
 Every monsoon, landslides in Uttarakhand block highways, cut off villages and cost lives.
 This project uses **free satellite data and machine learning** to map *where* slopes are
-most likely to fail in **Rudraprayag district**, and later, *when* heavy rainfall pushes that risk up.
+most likely to fail in **Rudraprayag district**, and *when* heavy rainfall pushes that risk up.
 
 ![Landslide conditioning factors, Rudraprayag](figures/fig2_conditioning_factors.png)
 
@@ -26,7 +26,7 @@ Knowing which slopes are most vulnerable helps decide where to monitor, reinforc
 3. **Model:** a random forest learns which combinations of terrain factors are associated with landslides.
 4. **Honest evaluation:** spatial cross-validation (training and testing on *separate areas*),
    plus checks that the model isn't just learning *where* landslides happen to be in my data.
-5. **Rainfall:** add satellite rainfall (NASA GPM) to see how risk changes through the monsoon.
+5. **Rainfall:** satellite rainfall (NASA GPM IMERG) to see *when* and *where* the monsoon hits hardest.
 6. **Map:** an interactive susceptibility map anyone can explore.
 
 ## Figure 3: Landslide inventory
@@ -100,6 +100,31 @@ Scores are **relative**, not probabilities, so the map uses five classes that ea
 > unverified inventory and should not be used for safety or planning decisions.
 > For official information, refer to the Uttarakhand State Disaster Management Authority.
 
+## Figure 6: Monsoon rainfall
+
+![Monsoon rainfall, Rudraprayag](figures/fig6_rainfall.png)
+
+Satellite rainfall (NASA GPM IMERG V07, monthly, ~11 km pixels, 1998–2025) over the district:
+
+- **The monsoon dominates:** June–September brings about **1,336 mm**, roughly **72%** of the annual
+  total (~1,865 mm), peaking in July and August.
+- **June 2013 stands out:** at **501 mm** it's the wettest June in the record, almost three times the
+  average June, matching the rainfall behind the Kedarnath disaster in this district.
+- **But 2013 was only the 3rd wettest monsoon overall.** The disaster came from a short, extreme burst,
+  not an unusually wet season, so seasonal totals alone can't tell you when slopes fail.
+- **My scars were mapped after three above-average monsoons:** 2023 (+5%), 2024 (+17%) and
+  2025 (+24%, 4th wettest). That's *consistent with* many fresh scars, but the inventory has no dates,
+  so it can't show which monsoon triggered which landslide.
+- **Where:** the northwest is wettest (~1,600+ mm per monsoon), the southwest driest (~940 mm).
+- **Rain and susceptibility are independent at this scale:** exactly 33% of the "Very high" area falls
+  in the wettest third of the district, the value you'd expect with no relationship. So terrain and
+  rainfall carry separate information, and a slope's overall hazard depends on both.
+
+**Why rainfall isn't in the model:** each IMERG pixel is ~11 km wide, and 26 of 38 landslides share
+exactly the same rainfall value as their nearest stable point. At this resolution, rainfall can't
+tell a failing slope from its neighbour. Satellite rainfall in steep mountains is also uncertain;
+the June 2013 check is reassuring, but it isn't a validation against rain gauges.
+
 ## Roadmap
 
 - [x] Step 1: Build feature stack in Google Earth Engine (`01_build_features.ipynb`)
@@ -109,8 +134,10 @@ Scores are **relative**, not probabilities, so the map uses five classes that ea
 - [x] Step 3: Random forest, spatial cross-validation, naive vs matched sampling (`03_model.ipynb`)
 - [x] Figure 4: model evaluation
 - [x] Figure 5: susceptibility map across the district, with held-out check
-- [ ] Step 4: Add monsoon rainfall ← **next**
-- [ ] Step 5: Interactive map on GitHub Pages
+- [x] Step 4: Monsoon rainfall with NASA GPM IMERG (`04_rainfall.ipynb`)
+- [x] Figure 6: rainfall seasonality, monsoon totals, spatial pattern
+- [ ] Step 5: Interactive map on GitHub Pages ← **next**
+- [ ] Figure 1: study area map (India → Uttarakhand → Rudraprayag)
 - [ ] Step 6: Technical write-up and comparison with published studies
 
 ## Data sources
@@ -123,7 +150,7 @@ Scores are **relative**, not probabilities, so the map uses five classes that ea
 | Rivers | WWF HydroSHEDS |
 | District boundary | FAO GAUL 2025 |
 | Landslide inventory | My own, from Sentinel-2 candidates verified on high-resolution imagery |
-| Rainfall (planned) | NASA GPM IMERG |
+| Rainfall | NASA GPM IMERG V07 monthly (~11 km), 1998–2025 |
 
 ## Repository structure
 
@@ -132,9 +159,12 @@ Scores are **relative**, not probabilities, so the map uses five classes that ea
 | `01_build_features.ipynb` | Builds the 6 conditioning factors in Earth Engine and makes Figure 2 |
 | `02_landslide_inventory.ipynb` | Removes duplicate landslides, samples no-landslide points, makes Figure 3 |
 | `03_model.ipynb` | Random forest with random vs spatial CV, naive vs matched sampling, feature diagnostics, susceptibility map, held-out check, Figures 4–5 |
+| `04_rainfall.ipynb` | Monthly IMERG rainfall, monsoon totals by year, rainfall map, rainfall vs susceptibility, Figure 6 |
 | `data/training_points_wgs84.geojson` | 76 training points, naive sampling (label 1 = landslide, 0 = no landslide), lat/lon (EPSG:4326) |
 | `data/training_points_matched_wgs84.geojson` | 76 training points, matched sampling (stable points within 3 km of a landslide), lat/lon (EPSG:4326) |
 | `data/landslide_review_rudraprayag.geojson` | All 299 saved review decisions (yes / no / unsure) with candidate ID and patch area |
+| `data/rainfall_monthly_rudraprayag.csv` | District-average monthly rainfall, 1998-01 to 2025-09 (mm) |
+| `data/rainfall_monsoon_totals.csv` | June–September rainfall totals per year, 1998–2025 (mm and % vs average) |
 | `figures/` | Figures for the paper |
 | `notes.md` | Running log of every decision, problem and fix |
 | `requirements.txt` | Python packages used by the notebooks |
@@ -149,6 +179,8 @@ Scores are **relative**, not probabilities, so the map uses five classes that ea
    then run the notebook in Colab.
 5. For `03_model.ipynb`: same Drive folder, plus `training_points.geojson` from notebook 02
    (or `data/training_points_wgs84.geojson` renamed; the notebook reprojects it automatically).
+6. For `04_rainfall.ipynb`: same Drive folder and Earth Engine project; it also needs
+   `rudraprayag_susceptibility.tif` and `training_points_matched.geojson` from notebook 03.
 
 ## Data citations
 
@@ -158,3 +190,4 @@ Scores are **relative**, not probabilities, so the map uses five classes that ea
 - Grill, G. et al. (2019). Mapping the world's free-flowing rivers. *Nature*, 569, 215–221.
 - FAO (2025). Global Administrative Unit Layers (GAUL) 2025. CC-BY-4.0.
 - Rouse, J. W. et al. (1974). Monitoring vegetation systems in the Great Plains with ERTS (NDVI).
+- Huffman, G. J., Stocker, E. F., Bolvin, D. T., Nelkin, E. J., Tan, J. (2019). GPM IMERG Final Precipitation L3 1 month 0.1° × 0.1° V07. GES DISC. doi:10.5067/GPM/IMERG/3B-MONTH/07
