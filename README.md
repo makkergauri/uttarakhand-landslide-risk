@@ -6,6 +6,9 @@ Every monsoon, landslides in Uttarakhand block highways, cut off villages and co
 This project uses **free satellite data and machine learning** to map *where* slopes are
 most likely to fail in **Rudraprayag district**, and *when* heavy rainfall pushes that risk up.
 
+🗺️ **[Explore the interactive map →](https://makkergauri.github.io/uttarakhand-landslide-risk/)**
+Zoom in, switch layers, and click any landslide to check it on satellite imagery yourself.
+
 ![Landslide conditioning factors, Rudraprayag](figures/fig2_conditioning_factors.png)
 
 ## Why this matters
@@ -136,8 +139,8 @@ the June 2013 check is reassuring, but it isn't a validation against rain gauges
 - [x] Figure 5: susceptibility map across the district, with held-out check
 - [x] Step 4: Monsoon rainfall with NASA GPM IMERG (`04_rainfall.ipynb`)
 - [x] Figure 6: rainfall seasonality, monsoon totals, spatial pattern
-- [ ] Step 5: Interactive map on GitHub Pages ← **next**
-- [ ] Figure 1: study area map (India → Uttarakhand → Rudraprayag)
+- [x] Step 5: Interactive map on GitHub Pages (`05_interactive_map.ipynb`, [live map](https://makkergauri.github.io/uttarakhand-landslide-risk/))
+- [ ] Figure 1: study area map (India → Uttarakhand → Rudraprayag) ← **next**
 - [ ] Step 6: Technical write-up and comparison with published studies
 
 ## Data sources
@@ -160,6 +163,8 @@ the June 2013 check is reassuring, but it isn't a validation against rain gauges
 | `02_landslide_inventory.ipynb` | Removes duplicate landslides, samples no-landslide points, makes Figure 3 |
 | `03_model.ipynb` | Random forest with random vs spatial CV, naive vs matched sampling, feature diagnostics, susceptibility map, held-out check, Figures 4–5 |
 | `04_rainfall.ipynb` | Monthly IMERG rainfall, monsoon totals by year, rainfall map, rainfall vs susceptibility, Figure 6 |
+| `05_interactive_map.ipynb` | Converts the susceptibility map into web layers and builds the interactive Folium map |
+| `docs/index.html` | The interactive map itself (served by GitHub Pages) |
 | `data/training_points_wgs84.geojson` | 76 training points, naive sampling (label 1 = landslide, 0 = no landslide), lat/lon (EPSG:4326) |
 | `data/training_points_matched_wgs84.geojson` | 76 training points, matched sampling (stable points within 3 km of a landslide), lat/lon (EPSG:4326) |
 | `data/landslide_review_rudraprayag.geojson` | All 299 saved review decisions (yes / no / unsure) with candidate ID and patch area |
@@ -181,6 +186,8 @@ the June 2013 check is reassuring, but it isn't a validation against rain gauges
    (or `data/training_points_wgs84.geojson` renamed; the notebook reprojects it automatically).
 6. For `04_rainfall.ipynb`: same Drive folder and Earth Engine project; it also needs
    `rudraprayag_susceptibility.tif` and `training_points_matched.geojson` from notebook 03.
+7. For `05_interactive_map.ipynb`: same Drive folder and Earth Engine project (for the district boundary);
+   it needs `rudraprayag_susceptibility.tif` and `training_points_matched.geojson` from notebook 03.
 
 ## Data citations
 
@@ -191,3 +198,4 @@ the June 2013 check is reassuring, but it isn't a validation against rain gauges
 - FAO (2025). Global Administrative Unit Layers (GAUL) 2025. CC-BY-4.0.
 - Rouse, J. W. et al. (1974). Monitoring vegetation systems in the Great Plains with ERTS (NDVI).
 - Huffman, G. J., Stocker, E. F., Bolvin, D. T., Nelkin, E. J., Tan, J. (2019). GPM IMERG Final Precipitation L3 1 month 0.1° × 0.1° V07. GES DISC. doi:10.5067/GPM/IMERG/3B-MONTH/07
+- Basemaps in the interactive map: Esri World Imagery; © OpenStreetMap contributors; OpenTopoMap (CC-BY-SA).
