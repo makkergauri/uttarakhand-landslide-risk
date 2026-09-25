@@ -84,9 +84,13 @@ Running log of decisions, problems and fixes. Used for writing the Methods secti
 
 ### Review sessions
 - **25 Sept 2026, session 1:** first 10 candidates → 3 yes, 6 no, 1 unsure (precision ≈ 33%). Saved and exported.
-- **25 Sept 2026, session 2:** page reloaded and unsaved work after candidate 10 was lost.
-  Restarted from candidate 11 using the saved first 10. Now saving every 10 candidates.
-- Final results: in progress (reviewed __, yes __, no __, unsure __).
+- **25 Sept 2026, session 2:** - **25 Sept 2026, session 2:** page reloaded after candidate 10 and unsaved answers were lost.
+- **25 Sept 2026, session 3:** reviewed 140 candidates, but the page reloaded again and only the first 10
+  had been exported to Drive (the other Save clicks created tasks that were never RUN, and the Console is
+  cleared on reload). Lost ~130 decisions.
+- **Fix:** added an always-visible backup box to the review tool showing the latest decisions as JSON.
+  Copying it to a Google Doc every 10 candidates, turned off Chrome Memory Saver, and only clicking Run
+  at the start of a session. Redoing from candidate 11.
 
 ### Decision rules I settled on while reviewing
 - stream beds and gullies (grey strips in valley bottoms, same width all the way, joining other channels) → no
