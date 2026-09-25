@@ -136,3 +136,98 @@
 - Published matched points as data/training_points_matched_wgs84.geojson (EPSG:4326, Cell 10); Drive copy training_points_matched.geojson stays in UTM.
 - Saved 03_model.ipynb to GitHub; uploaded figures/fig4_model_evaluation.png.
 - README: added Figure 4 section, updated Approach step 4, roadmap, repo structure, Run it step 5.
+
+## Figure 5: Susceptibility map (notebook 03_model)
+
+### Prediction (Cell 11)
+- Final model: same RF settings (300 trees, min_samples_leaf = 2, random_state 42), trained on all 76 matched points, terrain features only.
+- Prediction domain = same as training: elevation 0–3500 m, not WorldCover 70/80. Outside domain = NaN ("not modelled").
+- Scores are relative, not true probabilities (training was 1:1 landslide:stable, not real landslide frequency) → map uses classes, not raw scores.
+- Saved rudraprayag_susceptibility.tif (float32, EPSG:32644, 30 m, NaN = not modelled).
+- Pixels scored: 1,767,254 (≈ 1,590 km² at 30 m). Score summary: mean 0.380, median 0.348, IQR 0.215–0.525, range 0.033–0.968.
+- Quick look: high scores follow the river network (dist_river signal), with valley walls higher than ridges (slope signal). Physically plausible (valley-side slides along Mandakini/Alaknanda and tributaries), but valleys also hold roads and villages → can't separate "near river" from "near road".
+- Northern peaks > 3,500 m and snow/ice not modelled; the model reaches only up the valleys.
+
+### Figure 5 (Cell 12)
+- Classes: quintiles of the modelled area (each class = 20% of area): very low / low / moderate / high / very high. Chosen because scores are relative, not probabilities.
+- Extrapolation flag: hatching where a modelled pixel is > 5 km from any training point (landslide or matched stable point).
+- Landslide class counts reported as a training-data consistency check only (model has seen these points), NOT validation.
+- Layout: grey = not modelled inside district, district outline, white triangles = 38 landslides, scale bar, north arrow, legend.
+- Class breaks (score): 0.191 / 0.287 / 0.409 / 0.573.
+- Modelled area > 5 km from any training point: 38.3% (mostly south) → over a third of the map is extrapolation.
+- Landslides by class (training data): very high 36, high 2, others 0; none outside the modelled area. Expected: a random forest nearly memorises 76 training points → NOT evidence the map is right. Honest performance stays within-block AUC ≈ 0.72.
+- South (hatched) shows speckled red/orange/yellow instead of the clean river-line pattern: south is lower (700–1,500 m) than all training data, and landslides sit slightly lower than their neighbours → model extrapolates "lower = riskier". Likely artefact, flagged by hatching.
+- Polish: legend moved outside the map on the right (district fills every corner); scale bar moved to lower right (covered the SW tip of the district).
+- Saved figures/fig5_susceptibility_map.png (300 dpi) + .pdf.
+
+### Held-out class check (Cell 13)
+- Method: k-means blocks (k = 5, random_state 42) on matched points. For each block: train RF on the other 4 blocks, score the whole district, classify with that model's own quintiles, record the class of each held-out point. Every point scored by a model that never saw it.
+- Baseline: classes are 20% of area each → 40% of landslides in High/Very high by chance.
+- Compare held-out landslides vs held-out stable points; the gap = how well the map separates failing slopes from nearby stable ones.
+- Block sizes very uneven: 29, 29, 12, 2, 4 held-out points (two northern clusters hold most points) → holding out a big block leaves only 47 training points.
+- Held-out classes (stable / landslide): very low 2/0; low 5/2; moderate 6/3; high 14/17; very high 11/16.
+- Held-out landslides in High/Very high: 87% (33/38), approx. 95% range 73–94%. Chance level 40%.
+- Held-out stable points in High/Very high: 66% (25/38), approx. 95% range 50–79%.
+- Interpretation: map reliably places unseen landslides in top classes, but nearby stable slopes also score high (they were sampled in the same valleys) → the map mainly identifies hazardous valley sides; slope-level separation is partial (consistent with within-block AUC 0.72). Ranges overlap → gap suggestive, not conclusive. Single block layout (seed 42) only.
+
+### Publishing Figure 5
+- Saved 03_model.ipynb to GitHub again (Cells 11–13); uploaded figures/fig5_susceptibility_map.png.
+- README: added Figure 5 section, disclaimer (student project, not an official hazard map; refer to USDMA), roadmap, requirements.txt in repo structure.
+- Repo fixes after check: restored Acknowledgements in README, re-added requirements.txt (had gone missing), added About description + topics.
+
+## Step 4: Rainfall (notebook 04_rainfall)
+
+### Scope (decided before analysis)
+- Inventory has no failure dates → can't link landslides to specific storms or derive rainfall thresholds.
+- IMERG pixels ~11 km; landslides and matched stable points (≤ 3 km apart) usually share a pixel → rainfall can't discriminate them; adding it to the model would reintroduce location. Rainfall NOT added to the model.
+- Instead: (1) seasonality and year-to-year monsoon variability, (2) sanity check: June 2013 (Kedarnath disaster) should stand out, (3) spatial pattern of monsoon rain vs susceptibility.
+
+### Monthly rainfall (Cells 1–2)
+- Dataset: NASA/GPM_L3/IMERG_MONTHLY_V07, band "precipitation" (mm/hr, monthly mean rate). Monthly total = rate × days in month × 24.
+- District mean via reduceRegion (mean, scale 5000 m) over the GAUL 2025 Rudraprayag boundary.
+- Saved rainfall_monthly_rudraprayag.csv (month, rate_mm_hr, mm, year, mon).
+- Available period: 1998-01 to 2025-09 (333 months). Full 2025 monsoon (June–September) included.
+- Early years (1998–2000) use fewer satellites → less reliable.
+- Mean monthly totals (mm): Jan 77, Feb 91, Mar 92, Apr 75, May 95, Jun 176, Jul 477, Aug 431, Sep 253, Oct 73, Nov 19, Dec 22. June–September ≈ 1,337 mm ≈ 71% of annual (~1,880 mm). Winter (Jan–Mar) not dry: western disturbances.
+- Sanity check PASSED: June 2013 = wettest June on record (501 mm, ~2.8× the average June of 176 mm); Kedarnath disaster rain fell mostly within a few days, so even this monthly total understates the intensity.
+- Other wet Junes: 2011 (360), 2008 (358), 2000 (343), 2025 (287, 5th wettest).
+- Caveat: satellite rainfall in steep Himalayan terrain is uncertain (localised orographic rain); the June 2013 check is reassuring but not a gauge validation.
+
+### Monsoon totals by year (Cell 3)
+- June–September sums for years with all 4 months; % difference from the average; saved rainfall_monsoon_totals.csv.
+- 28 complete monsoons (1998–2025). Average 1,336 mm = 72% of average annual total (1,865 mm).
+- Wettest: 2010 1,924 mm (+44%), 2011 1,788 (+34%), 2013 1,773 (+33%), 2025 1,658 (+24%), 2018 1,606 (+20%).
+- Driest: 2009 813 mm (−39%; consistent with the 2009 all-India drought), 2002 950 (−29%), 2014 1,018 (−24%).
+- 2013 is only the 3rd wettest monsoon despite the Kedarnath disaster → seasonal totals don't capture the short, intense bursts that trigger landslides (June 2013 = most extreme June). Supports day-scale rainfall for early warning, not seasonal totals.
+- Recent monsoons: 2023 1,397 (+5%), 2024 1,559 (+17%), 2025 1,658 (+24%, 4th wettest). Scars mapped Oct–Dec 2025 followed three above-average monsoons → "consistent with", not causal (inventory has no dates).
+- Do NOT claim a trend: 28 noisy years, early years less reliable.
+
+### Monsoon rainfall map (Cell 4)
+- Mean June–September total per pixel, 1998–2025 (monthly rate × hours in month, summed per year, averaged over years), clipped to district.
+- Downloaded via getDownloadURL at 1 km, EPSG:32644, outside = −9999 → NaN. Real resolution still ~11 km (≈ 30 pixels across the district).
+- Saved rudraprayag_monsoon_rain.tif.
+- Check passed: district average from map 1,328 mm vs 1,336 mm from monthly series (Cell 3).
+- Bug: outside-district pixels downloaded as 0, not −9999 → first min showed 0 mm. Fixed in Cell 5 by treating ≤ 0 as no data (no real monsoon total is 0).
+- Pattern: wettest in the northwest (~1,600+ mm, upper Mandakini side towards Kedarnath/Gaurikund), wet band across the middle towards the east (~1,400–1,500), driest in the southwest (~900–1,100). Roughly 2× range within one district.
+- NW wettest AND many landslides in NW, but north–south differences in this dataset are confounded with inventory location, and pixels are 11 km → observation only, not an explanation of the clustering.
+
+### Rainfall vs susceptibility (Cell 5)
+- Rain map reprojected (nearest) onto the 30 m susceptibility grid; same quintile classes as Figure 5.
+- Metrics: mean/median monsoon rain per class; share of "Very high" area in the wettest third (≈ 33% = no relationship); rain at landslides vs stable points; how many landslides share exactly the same rain value as their nearest stable point (= same IMERG pixel).
+- Fixed range: 940–1,663 mm per monsoon.
+- Mean monsoon rain by susceptibility class (mm): very low 1,372; low 1,353; moderate 1,325; high 1,316; very high 1,320 (~4% spread).
+- "Very high" area in the wettest third: 33% = exactly the no-relationship value → terrain susceptibility and monsoon rainfall exposure are independent at this scale → the two maps carry separate information; overall hazard depends on both.
+- Rain at points: landslides 1,324 mm vs stable 1,310 mm. 26 of 38 landslides have exactly the same rain value as their nearest stable point (same IMERG pixel); the rest in neighbouring pixels with similar values → confirms rainfall can't discriminate at this resolution; not added to the model (my prediction was 30+; 26 is slightly fewer, same conclusion).
+
+### Figure 6 (Cell 6)
+- (a) Mean monthly rain with 10th–90th percentile range across years; monsoon months dark blue; June 2013 as red point.
+- (b) Monsoon totals 1998–2025; 2013 and 2025 highlighted; average line; annotations ("2013: Kedarnath disaster, only 3rd wettest season"; "2025: before my scars were mapped").
+- (c) Average monsoon rain map (1 km display of ~11 km data), district outline from the 30 m feature stack, landslides, scale bar, colourbar.
+- Polish: wider slot for panel (c) (map was too small; figsize 16×5.2, width ratios 1 / 1.5 / 1.25); panel (b) y-limit raised to 2,700 and average legend moved to upper centre (was covering bars).
+- Saved figures/fig6_rainfall.png (300 dpi) + .pdf.
+
+### Publishing Step 4
+- Saved 04_rainfall.ipynb to GitHub; uploaded figures/fig6_rainfall.png.
+- Published data/rainfall_monthly_rudraprayag.csv and data/rainfall_monsoon_totals.csv.
+- README: Figure 6 section (monsoon share, June 2013 check, 2013 only 3rd wettest season, 2023–2025 above average, spatial pattern, rain–susceptibility independence, why rainfall not in model, satellite-rain caveat); IMERG citation (Huffman et al. 2019, doi:10.5067/GPM/IMERG/3B-MONTH/07); roadmap (Step 5 next, Figure 1 added); repo structure; Run it step 6.
+
