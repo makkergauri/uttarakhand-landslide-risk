@@ -261,3 +261,34 @@
 - Site: https://makkergauri.github.io/uttarakhand-landslide-risk/
 - Laptop test: opens zoomed to the district (Colab zoom issue was the small iframe); popups work (e.g. #19, Very high); legend and layer control don't overlap.
 - Faint lines across the basemap = gaps between satellite tiles when browser zoom / display scaling ≠ 100% (known Leaflet quirk), not a data issue.
+- README: map link under the intro, roadmap (Step 5 done, Figure 1 next), repo structure (05 notebook, docs/index.html), Run it step 7, basemap attribution in citations. About box: GitHub Pages website shown.
+
+## Figure 1: Study area (notebook 06_study_area)
+
+### Plan
+- (a) South Asia locator, (b) Uttarakhand districts with Rudraprayag highlighted + all district names, (c) Rudraprayag: hillshade, main rivers, key places (Rudraprayag town, Gaurikund, Kedarnath), scale bar, north arrow.
+- Boundary sensitivity: GAUL draws disputed areas (Kashmir, Aksai Chin, Arunachal Pradesh, Kalapani) as separate units, so a GAUL "India" outline differs from the official Indian map. Decision: panel (a) shows all land in the region in plain grey with no borders drawn; only Uttarakhand highlighted; source note: boundaries from FAO GAUL 2025, not authoritative. For an Indian journal, Survey of India boundaries may be required.
+
+### Data (Cells 1–2)
+- Region land: GAUL 2025 has no level0 (country) layer ("FAO/GAUL/2025/level0" not found). Used FAO/GAUL/2025/level1 (states/provinces) within lon 66–99, lat 5–38, simplified (5 km) then clipped → study_area/region_land.geojson. Drawn in one grey with no border lines → no national or disputed boundaries shown at all.
+- Districts: GAUL 2025 level2, ISO3 IND, GAUL1_NAME contains "Uttarakh" (not "Uttar", which would match Uttar Pradesh), simplified 200 m → study_area/uttarakhand_districts.geojson.
+- Main rivers: HydroSHEDS FreeFlowingRivers within Rudraprayag, DIS_AV_CMS > 20 m³/s, clipped → study_area/rudraprayag_main_rivers.geojson.
+- Places (approximate coordinates, to verify by hand in Google Maps): Rudraprayag 30.2847, 78.9812; Gaurikund 30.6533, 79.0250; Kedarnath 30.7352, 79.0669 → study_area/places.geojson.
+- Region land: 169 level1 units in the box.
+- Districts: 13 found (Almora, Bageshwar, Chamoli, Champawat, Dehradun, Haridwar, Nainital, Pauri Garhwal, Pithoragarh, Rudraprayag, Tehri Garhwal, Udham Singh Nagar, Uttarkashi).
+- Main rivers: 26 segments, average flow 30–312 m³/s (largest = Alaknanda near Rudraprayag town).
+- Places: all 3 inside the district.
+
+### Figure 1 (Cell 3)
+- (a) Grey land (level1 units drawn with edge colour = fill, so no borders visible) on light-blue sea; Uttarakhand = dissolved districts, red, labelled; aspect corrected for latitude (cos 22°).
+- (b) 13 districts, Rudraprayag red; labels at representative points (always inside the polygon); aspect cos 30°.
+- (c) SRTM elevation at 60 m, hillshade (LightSource az 315°, alt 45°, soft blend) coloured with truncated terrain colormap (700–7,000 m); main rivers with width ∝ average flow; places with white-halo labels; district outline; scale bar; north arrow; colourbar.
+- Source note: GAUL 2025 not authoritative, no international boundaries; HydroSHEDS FFR > 20 m³/s; SRTM 30 m shown at 60 m.
+- Polish: Rudraprayag label in (b) covered Tehri Garhwal and Chamoli → moved outside the state (NE white space) with an arrow; axis ticks in (a) and (b) now show °E / °N.
+- Saved figures/fig1_study_area.png (300 dpi) + .pdf.
+- Independent check: Rudraprayag town dot sits exactly at the Mandakini–Alaknanda confluence drawn from HydroSHEDS (separate dataset).
+
+### Publishing Figure 1
+- Saved 06_study_area.ipynb to GitHub; uploaded figures/fig1_study_area.png.
+- study_area/ GeoJSONs NOT published (cut directly from FAO GAUL, whose licence restricts redistribution); the notebook regenerates them.
+- README: Figure 1 section after "Why this matters" (district description, rivers, boundary disclaimer); roadmap (all figures done, Step 6 next); repo structure; Run it step 8.
