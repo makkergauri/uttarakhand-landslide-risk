@@ -173,7 +173,7 @@
 ### Publishing Figure 5
 - Saved 03_model.ipynb to GitHub again (Cells 11–13); uploaded figures/fig5_susceptibility_map.png.
 - README: added Figure 5 section, disclaimer (student project, not an official hazard map; refer to USDMA), roadmap, requirements.txt in repo structure.
-- Repo fixes after check: restored Acknowledgements in README, re-added requirements.txt (had gone missing), added About description + topics.
+- Repo fixes after check: restored Acknowledgements in README (went missing several times when pasting full files), re-added requirements.txt (had gone missing), added About description + topics.
 
 ## Step 4: Rainfall (notebook 04_rainfall)
 
@@ -231,3 +231,33 @@
 - Published data/rainfall_monthly_rudraprayag.csv and data/rainfall_monsoon_totals.csv.
 - README: Figure 6 section (monsoon share, June 2013 check, 2013 only 3rd wettest season, 2023–2025 above average, spatial pattern, rain–susceptibility independence, why rainfall not in model, satellite-rain caveat); IMERG citation (Huffman et al. 2019, doi:10.5067/GPM/IMERG/3B-MONTH/07); roadmap (Step 5 next, Figure 1 added); repo structure; Run it step 6.
 
+## Step 5: Interactive map (notebook 05_interactive_map)
+
+### Plan
+- Folium (Leaflet) web map, published with GitHub Pages (docs/index.html).
+- Layers: satellite basemap (Esri World Imagery) + street map (OpenStreetMap; blocked inside Colab but works in normal browsers) + topographic (OpenTopoMap); susceptibility classes (Figure 5 colours, toggleable, semi-transparent); extrapolation zone (> 5 km from training points) as stripes; 38 landslides with popups linking to Google Maps satellite for self-checking; district boundary; legend; disclaimer.
+
+### Web layers (Cells 1–2)
+- Classes rebuilt with the same quintile breaks as Figure 5; extrapolation zone recomputed (> 5 km from any matched training point).
+- Reprojected UTM 44N → Web Mercator (EPSG:3857), nearest neighbour (classes must stay classes); web maps use EPSG:3857, so an unconverted image would sit slightly off.
+- Coloured to RGBA PNGs (not modelled = transparent; stripes for extrapolation). Saved web/susceptibility_3857.png, web/extrapolation_3857.png, web/image_bounds.json (lat/lon corners).
+- Checks passed: class breaks identical to Figure 5 (0.191 / 0.287 / 0.409 / 0.573); extrapolation area 38.3% (same as Figure 5).
+- Web Mercator image: 1,773 × 2,366 px; bounds lat 30.1729–30.8119, lon 78.8076–79.3634. PNGs: susceptibility 0.7 MB, stripes < 0.05 MB.
+
+### Map (Cell 3)
+- Basemaps: Esri World Imagery (default), OpenStreetMap, OpenTopoMap (attributions included).
+- Overlays: susceptibility PNG (opacity 0.6), extrapolation stripes, district boundary (GAUL 2025, white line with dark casing), 38 landslides as white circle markers with tooltip + popup (coordinates, class at point, Google Maps satellite link, "not field-verified" note).
+- PNGs embedded as base64 data URLs → the map is one self-contained HTML file (web/index.html).
+- Legend (collapsible via <details>) with classes, stripes, marker, "not modelled", disclaimer (student project, not official; refer to USDMA), link to repo. Title bar at top; scale bar bottom left; layer control expanded.
+- index.html: 1.1 MB.
+- Fixes after first render: all three basemaps were visible at once (Folium shows every TileLayer by default) → show=False on street and topo maps; legend covered the layer control → moved to bottom left (above scale bar), max-width 230 px; marker radius 6 → 5 (merged into a blob when zoomed out).
+- Colab preview crowded and zoomed out (small iframe ~450 px tall) → judged on the real site instead.
+- Legend auto-folds on screens < 700 px wide (small script; <details> removes "open").
+
+### Publishing (Step 5d)
+- Downloaded index.html via google.colab files.download (Drive search box doesn't understand folder paths).
+- Saved 05_interactive_map.ipynb to GitHub.
+- Map uploaded as docs/index.html; GitHub Pages enabled (Deploy from a branch → main → /docs).
+- Site: https://makkergauri.github.io/uttarakhand-landslide-risk/
+- Laptop test: opens zoomed to the district (Colab zoom issue was the small iframe); popups work (e.g. #19, Very high); legend and layer control don't overlap.
+- Faint lines across the basemap = gaps between satellite tiles when browser zoom / display scaling ≠ 100% (known Leaflet quirk), not a data issue.
