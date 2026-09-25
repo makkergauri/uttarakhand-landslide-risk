@@ -32,8 +32,26 @@ Running log of decisions, problems and fixes. Used for writing the Methods secti
 
 ### Problems and fixes
 - geemap's default OpenStreetMap background tiles were blocked in Colab (403 "Access blocked").
-  Switched the basemap to Google `HYBRID` satellite imagery, which also suits a terrain project better.
-- GAUL 2015 deprecation warning, fixed by moving to GAUL 2025.
+  Switched to Esri World Imagery as the basemap, which also suits a terrain project better.
+- GAUL 2015 deprecation warning, fixed by moving to GAUL 2025. Official Rudraprayag boundary found.
+- Land cover panel first used a continuous colorbar, which is wrong for categorical data.
+  Replaced with official ESA WorldCover colours and a labelled legend.
+
+### Figure 2 made
+- 6-panel conditioning factors figure, read from the exported GeoTIFF at 60 m (half resolution) for speed.
+- Saved as PNG (300 dpi) and PDF in Drive under `landslide_project/figures/`.
+- Pixels outside the district are exported as 0, masked as NaN using elevation == 0 (no real pixel is at 0 m here).
+
+### First observations (for Results / Discussion)
+- Elevation ranges from ~700 m in the southern river valleys to ~7,000 m in the north (Kedarnath peaks).
+- Most of the district has slopes between 25 and 45 degrees.
+- Dense vegetation (high NDVI) through the middle; snow, ice and bare rock in the north.
+- **Idea for Step 3:** the high-altitude snow/ice zone behaves differently and has few settlements.
+  Consider excluding permanent snow and ice (WorldCover class 70) from the model, as many studies do.
+
+### To do next
+- [x] Export finished and Figure 2 generated
+- [ ] Step 2: get landslide inventory from GSI Bhukosh
 
 ### Figures planned for the paper
 1. Study area map (location within India and Uttarakhand)
