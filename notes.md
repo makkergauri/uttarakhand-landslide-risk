@@ -4,7 +4,7 @@ Running log of decisions, problems and fixes. Used for writing the Methods secti
 
 ---
 
-## Step 1: Feature stack (Sept 2026)
+## Step 1: Feature stack (25 Sept 2026)
 
 ### Study area
 - Chose **Rudraprayag district** instead of all of Uttarakhand, to keep things fast to iterate on.
@@ -53,10 +53,10 @@ Running log of decisions, problems and fixes. Used for writing the Methods secti
 
 ---
 
-## Step 2: Landslide inventory
+## Step 2: Landslide inventory (started 25 Sept 2026)
 
 ### Data access problems
-- **GSI Bhukosh portal** (bhukosh.gsi.gov.in) wasn't loading (tried on Sept 25th, 2026). Government portals go down often; retrying daily.
+- **GSI Bhukosh portal** (bhukosh.gsi.gov.in) wasn't loading (tried 25 Sept 2026). Government portals go down often; retrying occasionally.
 - **NASA COOLR** (Cooperative Open Online Landslide Repository) was the backup source:
   - Events layers (points and polygons) on gis.earthdata.nasa.gov returned 404, probably after NASA's Earthdata GIS system upgrade.
   - maps.nccs.nasa.gov was unreachable from Colab ("Network is unreachable").
@@ -64,35 +64,63 @@ Running log of decisions, problems and fixes. Used for writing the Methods secti
     both from Colab and from my own browser. So the query service is down, not just blocked for Colab.
 - Conclusion: no existing inventory was accessible, so I built my own.
 
-### Decision: build my own inventory by visual interpretation
-- Mapped landslide initiation points in the Earth Engine Code Editor (script `02b_map_landslides`).
-- Imagery: Sentinel-2 SR median composite, Oct to Dec 2025 (post-monsoon, <20% cloud),
-  checked against the high-resolution Google satellite basemap.
-- Helper layer: "candidate" pixels with NDVI < 0.2 and slope > 25°, excluding snow/ice and water (ESA WorldCover 70, 80).
-  Only used to find places to look. Every point was confirmed visually.
-- Mapping rules:
-  - one point per landslide, at the top of the scar (initiation point)
-  - only clear, fresh scars (bare, tongue/fan shaped, running downslope)
-  - skipped river bars, roads, quarries, farmland, snow, bare ridge tops
-  - mapped at zoom 15–16, sweeping valleys systematically to avoid road bias
-- Exported as GeoJSON to Drive (`landslides_manual_rudraprayag`).
-- Sessions: ____ (date, number of points each time)
-- Total points: ____
+### First attempt: manual hunting (abandoned)
+- Tried finding scars by hand in the Earth Engine Code Editor
+  (repository `users/makkergauri/landslide_uttarakhand`, script `map_landslides`).
+- Found the first landslide (debris track near Sonprayag–Gaurikund on the Kedarnath route),
+  but it was far too slow to reach 100+ points.
+
+### Current method: semi-automatic inventory (candidate detection + manual verification)
+- Script `review_candidates` in `users/makkergauri/landslide_uttarakhand`.
+  1. **Automatic candidates:** pixels with NDVI < 0.2 (Sentinel-2, Oct–Dec 2025), slope > 25°,
+     not snow/ice or water (ESA WorldCover 70, 80), elevation < 3500 m (above the treeline bare rock is natural).
+     Converted to patches with `reduceToVectors` at 20 m; kept patches of 0.2–20 ha.
+     Result: **330 candidate patches** in the district.
+  2. **Manual verification:** random sample of 300 patches (seed 42), each reviewed on high-resolution
+     Google imagery at zoom 17 and labelled yes / no / unsure. May extend to all 330.
+- Landslide points = centroid of each patch labelled "yes".
+- "No" patches are also kept: they are verified non-landslides and can be used as negative examples.
+- Exported as GeoJSON to Drive (`landslide_review_rudraprayag`).
+
+### Review sessions
+- **25 Sept 2026, session 1:** first 10 candidates → 3 yes, 6 no, 1 unsure (precision ≈ 33%). Saved and exported.
+- **25 Sept 2026, session 2:** page reloaded and unsaved work after candidate 10 was lost.
+  Restarted from candidate 11 using the saved first 10. Now saving every 10 candidates.
+- Final results: in progress (reviewed __, yes __, no __, unsure __).
+
+### Decision rules I settled on while reviewing
+- stream beds and gullies (grey strips in valley bottoms, same width all the way, joining other channels) → no
+- buildings, construction sites, roads, riverbeds, white water → no
+- plain road cut with no debris on the road and no bowl-shaped scar → no / unsure
+- rock cliffs and ridge edges in shadow → no
+- bright, clean bare patch cut into forest, sharp edge, spreading downhill → yes
+- bare slope collapsing into a stream (streamside slide) → yes
+- huge boulder fan much wider than a normal stream, fed by a steep channel (debris-flow deposit) → yes
+- dull brown slope with scattered bushes, or high alpine brown terrain → unsure
+- same landslide as an earlier candidate → unsure (avoids counting one landslide twice)
+- zoom out 2 levels when the outline sits inside a bigger bare area
+- more than 30 seconds without a clear answer → unsure
 
 ### Limitations (for the paper)
-- No field verification.
-- Inventory reflects scars visible in late 2025, so older, revegetated landslides are under-represented.
-- Single interpreter (me), so some subjectivity in what counts as a landslide.
-- If Bhukosh comes back, use GSI points as an independent comparison to check my inventory.
+- No field verification; single interpreter (me), so some subjectivity.
+- Only landslides that were still bare in late 2025 and larger than 0.2 ha can be found,
+  so older revegetated and very small landslides are under-represented.
+- Landslide points are patch centroids, not initiation points (top of the scar).
+- **Possible circularity:** candidates were found using low NDVI and steep slope, and NDVI and slope are also
+  model features. This could make those two features look more important than they are.
+  To check in Step 3: compare the model with and without NDVI.
+- If Bhukosh comes back, use GSI points as an independent check of my inventory.
 
 ---
 
 ## To do next
 - [x] Step 1: feature stack exported
 - [x] Figure 2 generated and added to GitHub and README
-- [ ] Step 2: map first ~50 landslides, export, check count
-- [ ] Step 2: reach 150–300 landslides
-- [ ] Step 2: generate "no landslide" points and make Figure 3
+- [x] Step 2: review tool built, first 10 candidates saved
+- [ ] Step 2: finish reviewing all candidates, save, run the export task
+- [ ] Step 2: Colab notebook `02_landslide_inventory`: load results, remove duplicates,
+      generate "no landslide" points, make Figure 3
+- [ ] Step 3: random forest + spatial cross-validation + NDVI circularity check
 - [ ] Keep retrying Bhukosh
 
 ## Figures planned for the paper
