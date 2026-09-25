@@ -158,7 +158,3 @@ Scores are **relative**, not probabilities, so the map uses five classes that ea
 - Grill, G. et al. (2019). Mapping the world's free-flowing rivers. *Nature*, 569, 215–221.
 - FAO (2025). Global Administrative Unit Layers (GAUL) 2025. CC-BY-4.0.
 - Rouse, J. W. et al. (1974). Monitoring vegetation systems in the Great Plains with ERTS (NDVI).
-
-## Acknowledgements
-
-Code scaffolding and project planning developed with help from Claude (Anthropic).
