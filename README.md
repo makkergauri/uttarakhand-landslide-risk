@@ -23,9 +23,9 @@ Knowing which slopes are most vulnerable helps decide where to monitor, reinforc
    - the code finds bare patches on steep slopes (possible landslide scars) from Sentinel-2 imagery,
    - I review each candidate on high-resolution imagery with a custom Earth Engine tool
      and label it landslide / not a landslide / unsure.
-3. **Model:** a random forest learns which combinations of factors are associated with landslides.
+3. **Model:** a random forest learns which combinations of terrain factors are associated with landslides.
 4. **Honest evaluation:** spatial cross-validation (training and testing on *separate areas*),
-   because random splits overstate accuracy when neighbouring pixels are nearly identical.
+   plus checks that the model isn't just learning *where* landslides happen to be in my data.
 5. **Rainfall:** add satellite rainfall (NASA GPM) to see how risk changes through the monsoon.
 6. **Map:** an interactive susceptibility map anyone can explore.
 
@@ -47,8 +47,35 @@ Grey shading shows elevation (darker = higher).
 
 **Limitations:** small inventory from a single interpreter, no field verification, and only
 landslides still bare in late 2025 and larger than 0.2 ha could be found. Landslides cluster
-in the north (upper Mandakini valley), so the model could partly learn *location* instead of
-slope stability. Spatial cross-validation in Step 3 is designed to catch this.
+in the north (upper Mandakini valley), which turned out to matter a lot for the model (below).
+
+## Figure 4: Model evaluation
+
+![Model evaluation](figures/fig4_model_evaluation.png)
+
+**The first model looked great, and then fell apart for the right reasons.**
+
+- With no-landslide points spread across the whole district, a terrain-only random forest scored
+  **AUC 0.85** under spatial cross-validation. But a model that only knew each point's **map coordinates**
+  scored **0.83**. Because landslides cluster in the north, the model was mostly learning *where*,
+  not *why*.
+- **Fix:** I re-drew the no-landslide points **within 3 km of each landslide** (same valleys, > 500 m
+  from any landslide). Now location gives no advantage: the coordinates-only model drops to ~0.49,
+  a coin flip.
+- On this matched set, the terrain-only model scores **AUC ≈ 0.72** when tested inside held-out areas
+  (within-block AUC, ± 0.05 across 10 repeats; the true uncertainty is larger with only 76 points).
+  That's the honest number: *within the same area*, it ranks the landslide above its stable neighbour
+  about 72% of the time.
+- **Slope** and **distance to river** carry the local signal (~0.66 each on their own); elevation is weak
+  and aspect adds nothing.
+- Adding **NDVI and land cover** pushes the score to ~0.93–0.95, but only because the landslides were
+  *found* by looking for bare ground. These features describe the scar, not the slope before it failed,
+  so they're excluded from the model.
+
+**Caveats:** the slope signal may be partly inflated because candidates had to be steeper than 25°,
+and distance to river may partly stand for distance to roads, which follow the rivers here.
+Published studies often report AUCs of 0.85–0.95, but with different sampling and validation,
+so the numbers aren't directly comparable.
 
 ## Roadmap
 
@@ -56,7 +83,9 @@ slope stability. Spatial cross-validation in Step 3 is designed to catch this.
 - [x] Figure 2: conditioning factors
 - [x] Step 2: Landslide inventory: 300 candidates reviewed, 38 landslides after deduplication (`02_landslide_inventory.ipynb`)
 - [x] Figure 3: landslide inventory map
-- [ ] Step 3: Train random forest + spatial cross-validation ← **in progress**
+- [x] Step 3: Random forest, spatial cross-validation, naive vs matched sampling (`03_model.ipynb`)
+- [x] Figure 4: model evaluation
+- [ ] Figure 5: susceptibility map across the district ← **next**
 - [ ] Step 4: Add monsoon rainfall
 - [ ] Step 5: Interactive map on GitHub Pages
 - [ ] Step 6: Technical write-up and comparison with published studies
@@ -79,7 +108,9 @@ slope stability. Spatial cross-validation in Step 3 is designed to catch this.
 |---|---|
 | `01_build_features.ipynb` | Builds the 6 conditioning factors in Earth Engine and makes Figure 2 |
 | `02_landslide_inventory.ipynb` | Removes duplicate landslides, samples no-landslide points, makes Figure 3 |
-| `data/training_points_wgs84.geojson` | 76 training points (label 1 = landslide, 0 = no landslide), lat/lon (EPSG:4326) |
+| `03_model.ipynb` | Random forest with random vs spatial CV, naive vs matched sampling, feature diagnostics, Figure 4 |
+| `data/training_points_wgs84.geojson` | 76 training points, naive sampling (label 1 = landslide, 0 = no landslide), lat/lon (EPSG:4326) |
+| `data/training_points_matched_wgs84.geojson` | 76 training points, matched sampling (stable points within 3 km of a landslide), lat/lon (EPSG:4326) |
 | `data/landslide_review_rudraprayag.geojson` | All 299 saved review decisions (yes / no / unsure) with candidate ID and patch area |
 | `figures/` | Figures for the paper |
 | `notes.md` | Running log of every decision, problem and fix |
@@ -92,6 +123,8 @@ slope stability. Spatial cross-validation in Step 3 is designed to catch this.
 4. For `02_landslide_inventory.ipynb`: put `rudraprayag_features.tif` (from notebook 01) and
    `data/landslide_review_rudraprayag.geojson` in a Google Drive folder called `landslide_project/`,
    then run the notebook in Colab.
+5. For `03_model.ipynb`: same Drive folder, plus `training_points.geojson` from notebook 02
+   (or `data/training_points_wgs84.geojson` renamed; the notebook reprojects it automatically).
 
 ## Data citations
 
@@ -101,7 +134,3 @@ slope stability. Spatial cross-validation in Step 3 is designed to catch this.
 - Grill, G. et al. (2019). Mapping the world's free-flowing rivers. *Nature*, 569, 215–221.
 - FAO (2025). Global Administrative Unit Layers (GAUL) 2025. CC-BY-4.0.
 - Rouse, J. W. et al. (1974). Monitoring vegetation systems in the Great Plains with ERTS (NDVI).
-
-## Acknowledgements
-
-Code scaffolding and project planning developed with help from Claude (Anthropic).
