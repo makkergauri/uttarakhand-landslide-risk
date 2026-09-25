@@ -292,3 +292,43 @@
 - Saved 06_study_area.ipynb to GitHub; uploaded figures/fig1_study_area.png.
 - study_area/ GeoJSONs NOT published (cut directly from FAO GAUL, whose licence restricts redistribution); the notebook regenerates them.
 - README: Figure 1 section after "Why this matters" (district description, rivers, boundary disclaimer); roadmap (all figures done, Step 6 next); repo structure; Run it step 8.
+
+## Robustness checks before the write-up (notebook 03_model, Cells 14–17)
+
+### Slope circularity check (Cell 14)
+- Problem: candidate filter required slope > 25°, so landslides are steep by design; stable points had no slope rule → "steeper = landslide" might partly rediscover the filter.
+- Test: re-drew stable points with the same slope > 25° rule (plus same matching: within 3 km, fallback 5/10 km, > 500 m from any landslide, same terrain mask, seed 42, pool of 200,000 valid steep pixels). Saved training_points_matched_steep.geojson (EPSG:32644).
+- Decision rule (set before results): only-slope → ~0.5 means the slope signal was mostly the filter; clearly > 0.5 means a real local slope effect.
+- Results (single draw): landslide centres ≤ 25°: 2 of 38; all 38 partners within 3 km. Means (landslide vs slope-matched stable): elevation 2506 vs 2602 m; slope 37.2 vs 37.5°; dist_river 317 vs 609 m.
+- Within-block AUC (slope-matched vs original matched): terrain 0.536 vs 0.721; only slope 0.637 vs 0.660; only dist_river 0.550 vs 0.669; coordinates only 0.475 vs 0.386.
+- Puzzles: only-slope 0.637 despite equal means (distribution shape?); dist_river dropped 0.669 → 0.550 although its mean gap barely changed → suggests strong sensitivity to WHICH stable points are drawn.
+- Key realisation: all ± values so far only reflected block layout; none included the uncertainty from drawing the stable points.
+
+### Across-draws uncertainty (Cell 15)
+- Slope distributions (p10 / median / p90 / share > 45°): original matched landslide 25.8 / 36.9 / 48.0 / 0.18 vs stable 19.8 / 36.7 / 45.5 / 0.13; slope-matched stable 27.0 / 36.5 / 47.4 / 0.26.
+- → Medians identical in the original set; the original slope "signal" was the gentle tail (stable points < 25°, which landslides couldn't have by design) = the candidate filter showing through.
+- 20 re-draws of stable points per design (pool of 200,000 allowed pixels > 500 m from any landslide; seeds 100–119; new block layout per draw). Within-block AUC, mean (95% range of draws):
+  - terrain: original matched 0.744 (0.515–0.850); slope-matched 0.694 (0.467–0.862)
+  - only slope: 0.542 (0.396–0.737); 0.482 (0.320–0.694)
+  - only dist_river: 0.643 (0.448–0.849); 0.629 (0.439–0.794)
+  - coordinates only: 0.585 (0.485–0.685); 0.532 (0.392–0.637)
+- Terrain AUC > 0.6 in 95% (original) / 80% (slope-matched) of draws.
+- Decision (rules set in advance): ranges overlap heavily → the slope rule doesn't clearly change the overall result (mean −0.05). Cell 14's 0.536 was an unlucky draw; the original 0.721 was typical.
+- Saved auc_across_draws.csv.
+
+### Elevation, aspect and terrain vs coordinates across draws (Cell 16)
+- Same 20 draws. Within-block AUC, mean (95% range): only elevation 0.544 (0.333–0.726) / 0.570 (0.377–0.727); only aspect 0.635 (0.465–0.780) / 0.594 (0.370–0.778).
+- Terrain beats coordinates-only in 90% of draws in BOTH designs; average gap +0.159 / +0.162 → most robust Step 3 finding: the model learns something beyond location.
+- Another single-draw reversal: aspect alone ≈ 0.6 on average (single draw showed 0.42, "adds nothing"); plausible physically (sun, moisture, vegetation), but range wide → modest signal.
+- Corrected Step 3 story: terrain-only within-area AUC ~0.7 on average (95% of draws ~0.5–0.85); beats location-only in 90% of draws; no single dominant feature (dist_river and aspect ~0.6 each; slope and elevation alone near chance once the filter is accounted for); single draws can mislead by ±0.15.
+- Methods lesson for the paper: with small inventories, report across many background draws, never one.
+- Earlier claims superseded: "within-block AUC 0.72" (single draw) → range; "slope and dist_river ~0.66 each" → slope ≈ chance, dist_river ~0.64; "aspect adds nothing" → ~0.6; "coordinates-only ≤ 0.5" → ~0.59.
+
+### Figure 4 v2 (Cell 17)
+- (a) Unchanged (naive vs matched, pooled spatial CV), title now says "one draw".
+- (b) Replaced single-draw bars with box plots of within-block AUC across 20 draws, matched vs matched + slope > 25°, for all terrain, distance to river, aspect, slope, elevation, coordinates only. Boxes = middle 50%, whiskers = 95% of draws, line = median. Caption must note (b) y-axis starts at 0.2.
+- Overwrote figures/fig4_model_evaluation.png + .pdf.
+
+### Publishing (robustness checks)
+- Saved 03_model.ipynb to GitHub (Cells 14–17); uploaded new figures/fig4_model_evaluation.png; published data/auc_across_draws.csv.
+- README: Figure 4 section rewritten (three rounds: naive → matched → 20 draws; terrain ~0.74 (0.52–0.85), beats location in 90% of draws; slope-matched ~0.69; feature signals; caveats); Approach step 4 mentions 20 draws; Figure 5 notes the map is from one draw; repo structure and Run it updated.
