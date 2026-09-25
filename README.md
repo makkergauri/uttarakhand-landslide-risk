@@ -35,10 +35,11 @@ Boundaries are from FAO GAUL 2025 and are not authoritative; international bound
    - the code finds bare patches on steep slopes (possible landslide scars) from Sentinel-2 imagery,
    - I review each candidate on high-resolution imagery with a custom Earth Engine tool
      and label it landslide / not a landslide / unsure.
-3. **Model:** a random forest learns which combinations of terrain factors are associated with landslides.
+3. **Model:** random forests learn which combinations of terrain factors are associated with landslides.
 4. **Honest evaluation:** spatial cross-validation (training and testing on *separate areas*),
    checks that the model isn't just learning *where* landslides happen to be in my data,
    and results reported across **20 random draws** of stable points instead of one.
+   The final map is the **average of 20 models**.
 5. **Rainfall:** satellite rainfall (NASA GPM IMERG) to see *when* and *where* the monsoon hits hardest.
 6. **Map:** an interactive susceptibility map anyone can explore.
 
@@ -99,22 +100,23 @@ but with different sampling and validation, so the numbers aren't directly compa
 
 ![Landslide susceptibility map, Rudraprayag](figures/fig5_susceptibility_map.png)
 
-The final terrain-only model scores every 30 m pixel below 3,500 m (about 1,590 km²).
-Scores are **relative**, not probabilities, so the map uses five classes that each cover
-20% of the modelled area.
+The final map is the **average of 20 terrain-only random forests**, each trained on a different random
+draw of stable points (the same draws as Figure 4b). It scores every 30 m pixel below 3,500 m
+(about 1,590 km²). Scores are **relative**, not probabilities, so the map uses five classes that each
+cover 20% of the modelled area.
 
 - **Pattern:** the highest classes follow the river network, especially the valley walls of the
   Mandakini, the Alaknanda and their tributaries; ridges score low.
-- **Held-out check:** for each of 5 areas, I trained the model without that area and checked where
-  its landslides fell. **87% of held-out landslides** landed in High/Very high (chance: 40%).
-  But so did **66% of nearby stable slopes**. So the map is good at finding *hazardous valley sides*,
-  and only partly separates the slope that fails from its neighbour. With 38 points per group,
-  this gap is suggestive, not conclusive.
+- **Held-out check:** for each of 5 areas, I trained 20 models *without* that area and checked where its
+  landslides fell. **87% of held-out landslides** landed in High/Very high (95% range 73–94%; chance: 40%),
+  compared with **49% of nearby stable slopes**. In the top class alone: **61% vs 23%**.
+  So the map separates failing slopes from their neighbours, not just risky valleys from safe ones.
+- **Classes are broad bands, not exact labels:** compared with a single-model map, 95% of pixels stay
+  within one class, but only 60% in exactly the same class. The 20 models disagree most **along the
+  rivers**: they agree valleys are riskier, but not on *how much*.
 - **Hatched areas** are more than 5 km from any training point (38% of the modelled area, mostly
-  the south). The model is extrapolating there, and the speckled pattern in the south is likely
-  an artefact of that.
-- **One draw:** this map and the held-out check come from a model trained on a single draw of stable
-  points. Since results vary between draws (Figure 4b), an average over many draws would be more robust.
+  the south). The model is extrapolating there; southern scores sit near the class boundaries,
+  so the mixed colours in the south shouldn't be read closely.
 
 > ⚠️ **This is a student research project, not an official hazard map.** It is based on a small,
 > unverified inventory and should not be used for safety or planning decisions.
@@ -152,8 +154,8 @@ the June 2013 check is reassuring, but it isn't a validation against rain gauges
 - [x] Step 2: Landslide inventory: 300 candidates reviewed, 38 landslides after deduplication (`02_landslide_inventory.ipynb`)
 - [x] Figure 3: landslide inventory map
 - [x] Step 3: Random forest, spatial cross-validation, naive vs matched sampling, slope check, 20-draw uncertainty (`03_model.ipynb`)
-- [x] Figure 4: model evaluation (v2, across 20 draws)
-- [x] Figure 5: susceptibility map across the district, with held-out check
+- [x] Figure 4: model evaluation (across 20 draws)
+- [x] Figure 5: susceptibility map (average of 20 models), with held-out check
 - [x] Step 4: Monsoon rainfall with NASA GPM IMERG (`04_rainfall.ipynb`)
 - [x] Figure 6: rainfall seasonality, monsoon totals, spatial pattern
 - [x] Step 5: Interactive map on GitHub Pages (`05_interactive_map.ipynb`, [live map](https://makkergauri.github.io/uttarakhand-landslide-risk/))
@@ -178,7 +180,7 @@ the June 2013 check is reassuring, but it isn't a validation against rain gauges
 |---|---|
 | `01_build_features.ipynb` | Builds the 6 conditioning factors in Earth Engine and makes Figure 2 |
 | `02_landslide_inventory.ipynb` | Removes duplicate landslides, samples no-landslide points, makes Figure 3 |
-| `03_model.ipynb` | Random forest with random vs spatial CV, naive vs matched sampling, feature diagnostics, slope circularity check, 20-draw uncertainty, susceptibility map, held-out check, Figures 4–5 |
+| `03_model.ipynb` | Random forests with random vs spatial CV, naive vs matched sampling, feature diagnostics, slope circularity check, 20-draw uncertainty, averaged map (20 models) with disagreement map, held-out checks, Figures 4–5 |
 | `04_rainfall.ipynb` | Monthly IMERG rainfall, monsoon totals by year, rainfall map, rainfall vs susceptibility, Figure 6 |
 | `05_interactive_map.ipynb` | Converts the susceptibility map into web layers and builds the interactive Folium map |
 | `06_study_area.ipynb` | Study area map: South Asia locator, Uttarakhand districts, Rudraprayag relief, rivers and places (Figure 1) |
@@ -203,7 +205,8 @@ the June 2013 check is reassuring, but it isn't a validation against rain gauges
    then run the notebook in Colab.
 5. For `03_model.ipynb`: same Drive folder, plus `training_points.geojson` from notebook 02
    (or `data/training_points_wgs84.geojson` renamed; the notebook reprojects it automatically).
-   The 20-draw analysis (Cells 15–16) takes about 10–15 minutes.
+   The 20-draw analysis (Cells 15–16) and the averaged map (Cell 18) take about 10–20 minutes each.
+   All random steps use fixed seeds, so results are reproducible.
 6. For `04_rainfall.ipynb`: same Drive folder and Earth Engine project; it also needs
    `rudraprayag_susceptibility.tif` and `training_points_matched.geojson` from notebook 03.
 7. For `05_interactive_map.ipynb`: same Drive folder and Earth Engine project (for the district boundary);
