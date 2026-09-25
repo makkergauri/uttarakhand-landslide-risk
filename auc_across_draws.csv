@@ -1,0 +1,241 @@
+design,draw,test,auc
+original matched,0,terrain (all),0.843047619047619
+original matched,0,only slope,0.7217142857142858
+original matched,0,only dist_river,0.7688571428571429
+original matched,0,coordinates only,0.687936507936508
+slope-matched,0,terrain (all),0.6596938775510204
+slope-matched,0,only slope,0.33364512471655333
+slope-matched,0,only dist_river,0.6839285714285714
+slope-matched,0,coordinates only,0.5022675736961452
+original matched,1,terrain (all),0.8071428571428572
+original matched,1,only slope,0.43539682539682545
+original matched,1,only dist_river,0.7388095238095238
+original matched,1,coordinates only,0.508015873015873
+slope-matched,1,terrain (all),0.6596780045351475
+slope-matched,1,only slope,0.3995578231292517
+slope-matched,1,only dist_river,0.6317981859410431
+slope-matched,1,coordinates only,0.6378616780045352
+original matched,2,terrain (all),0.7573015873015873
+original matched,2,only slope,0.5936507936507937
+original matched,2,only dist_river,0.6049206349206349
+original matched,2,coordinates only,0.650079365079365
+slope-matched,2,terrain (all),0.7746031746031746
+slope-matched,2,only slope,0.49269841269841275
+slope-matched,2,only dist_river,0.6236507936507936
+slope-matched,2,coordinates only,0.6006349206349206
+original matched,3,terrain (all),0.6479365079365079
+original matched,3,only slope,0.4622222222222222
+original matched,3,only dist_river,0.5027777777777778
+original matched,3,coordinates only,0.5376984126984128
+slope-matched,3,terrain (all),0.6764172335600908
+slope-matched,3,only slope,0.4554705215419501
+slope-matched,3,only dist_river,0.5854308390022676
+slope-matched,3,coordinates only,0.513265306122449
+original matched,4,terrain (all),0.7921088435374151
+original matched,4,only slope,0.44952380952380955
+original matched,4,only dist_river,0.4423129251700679
+original matched,4,coordinates only,0.49309523809523803
+slope-matched,4,terrain (all),0.8566666666666667
+slope-matched,4,only slope,0.7458730158730159
+slope-matched,4,only dist_river,0.8071428571428573
+slope-matched,4,coordinates only,0.6075396825396826
+original matched,5,terrain (all),0.8373771730914588
+original matched,5,only slope,0.5846056941295037
+original matched,5,only dist_river,0.7863189720332577
+original matched,5,coordinates only,0.590702947845805
+slope-matched,5,terrain (all),0.7451201814058958
+slope-matched,5,only slope,0.4129773242630385
+slope-matched,5,only dist_river,0.5370272108843538
+slope-matched,5,coordinates only,0.4461337868480726
+original matched,6,terrain (all),0.8293469387755102
+original matched,6,only slope,0.5330068027210885
+original matched,6,only dist_river,0.4564240362811791
+original matched,6,coordinates only,0.5975691609977325
+slope-matched,6,terrain (all),0.7706349206349207
+slope-matched,6,only slope,0.46150793650793653
+slope-matched,6,only dist_river,0.7243650793650793
+slope-matched,6,coordinates only,0.5507936507936508
+original matched,7,terrain (all),0.6498110355253213
+original matched,7,only slope,0.47218442932728644
+original matched,7,only dist_river,0.5981229528848576
+original matched,7,coordinates only,0.49484126984126997
+slope-matched,7,terrain (all),0.6624852607709751
+slope-matched,7,only slope,0.4730022675736961
+slope-matched,7,only dist_river,0.7379931972789116
+slope-matched,7,coordinates only,0.398328798185941
+original matched,8,terrain (all),0.8567074829931972
+original matched,8,only slope,0.5592471655328798
+original matched,8,only dist_river,0.8977868480725624
+original matched,8,coordinates only,0.6821315192743764
+slope-matched,8,terrain (all),0.5852380952380953
+slope-matched,8,only slope,0.5936507936507937
+slope-matched,8,only dist_river,0.5191269841269841
+slope-matched,8,coordinates only,0.6361904761904762
+original matched,9,terrain (all),0.7766666666666666
+original matched,9,only slope,0.7506349206349207
+original matched,9,only dist_river,0.7253968253968254
+original matched,9,coordinates only,0.6424603174603174
+slope-matched,9,terrain (all),0.6662131519274377
+slope-matched,9,only slope,0.3786848072562359
+slope-matched,9,only dist_river,0.6663548752834467
+slope-matched,9,coordinates only,0.5316326530612245
+original matched,10,terrain (all),0.7176190476190476
+original matched,10,only slope,0.4220634920634921
+original matched,10,only dist_river,0.6563492063492063
+original matched,10,coordinates only,0.641984126984127
+slope-matched,10,terrain (all),0.5019047619047619
+slope-matched,10,only slope,0.41801587301587306
+slope-matched,10,only dist_river,0.5097619047619047
+slope-matched,10,coordinates only,0.38619047619047614
+original matched,11,terrain (all),0.8425260770975058
+original matched,11,only slope,0.719875283446712
+original matched,11,only dist_river,0.6709183673469388
+original matched,11,coordinates only,0.6554784580498867
+slope-matched,11,terrain (all),0.5815827664399092
+slope-matched,11,only slope,0.4413424036281179
+slope-matched,11,only dist_river,0.778843537414966
+slope-matched,11,coordinates only,0.501437641723356
+original matched,12,terrain (all),0.6949569160997733
+original matched,12,only slope,0.39798866213151934
+original matched,12,only dist_river,0.6898820861678004
+original matched,12,coordinates only,0.47850566893424035
+slope-matched,12,terrain (all),0.7079415469891661
+slope-matched,12,only slope,0.4777324263038548
+slope-matched,12,only dist_river,0.6301965230536659
+slope-matched,12,coordinates only,0.5323557571176619
+original matched,13,terrain (all),0.41920634920634925
+original matched,13,only slope,0.4074603174603175
+original matched,13,only dist_river,0.4534126984126984
+original matched,13,coordinates only,0.6281746031746033
+slope-matched,13,terrain (all),0.7418493323255227
+slope-matched,13,only slope,0.48769211388259004
+slope-matched,13,only dist_river,0.7633849836230788
+slope-matched,13,coordinates only,0.6149155958679767
+original matched,14,terrain (all),0.6997777777777778
+original matched,14,only slope,0.5392312925170069
+original matched,14,only dist_river,0.6803310657596372
+original matched,14,coordinates only,0.550655328798186
+slope-matched,14,terrain (all),0.43553287981859407
+slope-matched,14,only slope,0.5521315192743763
+slope-matched,14,only dist_river,0.5348639455782314
+slope-matched,14,coordinates only,0.46413832199546484
+original matched,15,terrain (all),0.8189743589743589
+original matched,15,only slope,0.6103296703296703
+original matched,15,only dist_river,0.5815018315018315
+original matched,15,coordinates only,0.49197802197802193
+slope-matched,15,terrain (all),0.7463306534735106
+slope-matched,15,only slope,0.43173984745413313
+slope-matched,15,only dist_river,0.6396990311276025
+slope-matched,15,coordinates only,0.5325582354153783
+original matched,16,terrain (all),0.7576190476190476
+original matched,16,only slope,0.3938888888888889
+original matched,16,only dist_river,0.5668253968253968
+original matched,16,coordinates only,0.6043650793650793
+slope-matched,16,terrain (all),0.8386802721088437
+slope-matched,16,only slope,0.5317913832199547
+slope-matched,16,only dist_river,0.37561451247165534
+slope-matched,16,coordinates only,0.597204081632653
+original matched,17,terrain (all),0.7484126984126984
+original matched,17,only slope,0.6036507936507937
+original matched,17,only dist_river,0.7942857142857143
+original matched,17,coordinates only,0.5204761904761904
+slope-matched,17,terrain (all),0.7376629818594104
+slope-matched,17,only slope,0.6376027494331066
+slope-matched,17,only dist_river,0.7057752267573696
+slope-matched,17,coordinates only,0.5628224206349206
+original matched,18,terrain (all),0.7612789115646258
+original matched,18,only slope,0.47082312925170067
+original matched,18,only dist_river,0.7016485260770975
+original matched,18,coordinates only,0.6191292517006802
+slope-matched,18,terrain (all),0.6718946837994457
+slope-matched,18,only slope,0.30741370622323
+slope-matched,18,only dist_river,0.5596938775510205
+slope-matched,18,coordinates only,0.6136621315192745
+original matched,19,terrain (all),0.621904761904762
+original matched,19,only slope,0.7130158730158731
+original matched,19,only dist_river,0.5367460317460317
+original matched,19,coordinates only,0.6320634920634921
+slope-matched,19,terrain (all),0.8667482993197279
+slope-matched,19,only slope,0.6065056689342404
+slope-matched,19,only dist_river,0.5707573696145125
+slope-matched,19,coordinates only,0.40725396825396826
+original matched,0,only elevation,0.4946984126984127
+original matched,0,only aspect,0.4268571428571429
+slope-matched,0,only elevation,0.3569160997732426
+slope-matched,0,only aspect,0.413265306122449
+original matched,1,only elevation,0.5071428571428571
+original matched,1,only aspect,0.5396825396825398
+slope-matched,1,only elevation,0.5600680272108843
+slope-matched,1,only aspect,0.632546485260771
+original matched,2,only elevation,0.6165873015873016
+original matched,2,only aspect,0.5738095238095238
+slope-matched,2,only elevation,0.6142063492063492
+slope-matched,2,only aspect,0.6633333333333333
+original matched,3,only elevation,0.5523809523809524
+original matched,3,only aspect,0.7225396825396826
+slope-matched,3,only elevation,0.6401927437641723
+slope-matched,3,only aspect,0.6267857142857143
+original matched,4,only elevation,0.5293877551020408
+original matched,4,only aspect,0.7254081632653061
+slope-matched,4,only elevation,0.4714285714285714
+slope-matched,4,only aspect,0.6403174603174604
+original matched,5,only elevation,0.5668997228521038
+original matched,5,only aspect,0.7293776769967246
+slope-matched,5,only elevation,0.39952607709750565
+slope-matched,5,only aspect,0.8556916099773243
+original matched,6,only elevation,0.7307800453514739
+original matched,6,only aspect,0.6117233560090704
+slope-matched,6,only elevation,0.4201587301587302
+slope-matched,6,only aspect,0.6930158730158731
+original matched,7,only elevation,0.48774880322499375
+original matched,7,only aspect,0.5075711766187958
+slope-matched,7,only elevation,0.5379183673469388
+slope-matched,7,only aspect,0.6492426303854876
+original matched,8,only elevation,0.3653061224489796
+original matched,8,only aspect,0.5225986394557823
+slope-matched,8,only elevation,0.6717460317460318
+slope-matched,8,only aspect,0.5914285714285714
+original matched,9,only elevation,0.3761111111111111
+original matched,9,only aspect,0.6344444444444444
+slope-matched,9,only elevation,0.5878684807256236
+slope-matched,9,only aspect,0.6193310657596371
+original matched,10,only elevation,0.5585714285714285
+original matched,10,only aspect,0.6674603174603175
+slope-matched,10,only elevation,0.5695238095238095
+slope-matched,10,only aspect,0.45714285714285713
+original matched,11,only elevation,0.5861224489795919
+original matched,11,only aspect,0.8012607709750567
+slope-matched,11,only elevation,0.7160816326530612
+slope-matched,11,only aspect,0.5637392290249433
+original matched,12,only elevation,0.4963151927437641
+original matched,12,only aspect,0.6686303854875283
+slope-matched,12,only elevation,0.5812471655328799
+slope-matched,12,only aspect,0.5607457797933988
+original matched,13,only elevation,0.6973015873015873
+original matched,13,only aspect,0.5496825396825397
+slope-matched,13,only elevation,0.6373708742756361
+slope-matched,13,only aspect,0.6693625598387503
+original matched,14,only elevation,0.6146371882086168
+original matched,14,only aspect,0.6811473922902496
+slope-matched,14,only elevation,0.5095351473922903
+slope-matched,14,only aspect,0.3300113378684807
+original matched,15,only elevation,0.4478937728937728
+original matched,15,only aspect,0.61003663003663
+slope-matched,15,only elevation,0.5600762729334158
+slope-matched,15,only aspect,0.6701443001443002
+original matched,16,only elevation,0.5946825396825397
+original matched,16,only aspect,0.7558730158730158
+slope-matched,16,only elevation,0.6442154195011338
+slope-matched,16,only aspect,0.5835487528344672
+original matched,17,only elevation,0.7207936507936508
+original matched,17,only aspect,0.6212698412698413
+slope-matched,17,only elevation,0.5965844671201814
+slope-matched,17,only aspect,0.6055661848072562
+original matched,18,only elevation,0.6412222222222222
+original matched,18,only aspect,0.6354421768707483
+slope-matched,18,only elevation,0.5865583270345176
+slope-matched,18,only aspect,0.6111048122952885
+original matched,19,only elevation,0.3046031746031746
+original matched,19,only aspect,0.7053968253968254
+slope-matched,19,only elevation,0.7360997732426304
+slope-matched,19,only aspect,0.4446258503401361
