@@ -17,6 +17,15 @@ Rudraprayag sits on the route to Kedarnath, one of the busiest pilgrimage roads 
 in terrain that is steep, young and heavily cut by rivers and road construction.
 Knowing which slopes are most vulnerable helps decide where to monitor, reinforce, or warn.
 
+## Figure 1: Study area
+
+![Study area: Uttarakhand and Rudraprayag district](figures/fig1_study_area.png)
+
+Rudraprayag is one of Uttarakhand's 13 districts, in the Garhwal Himalaya. It rises from about 700 m
+in the southern valleys to about 7,000 m in the north, and is drained by the **Mandakini**, which flows
+south from the Kedarnath area, and the **Alaknanda**; the two meet at Rudraprayag town.
+Boundaries are from FAO GAUL 2025 and are not authoritative; international boundaries are not shown.
+
 ## Approach
 
 1. **Features:** for every 30 m pixel, compute factors that influence slope stability:
@@ -140,8 +149,8 @@ the June 2013 check is reassuring, but it isn't a validation against rain gauges
 - [x] Step 4: Monsoon rainfall with NASA GPM IMERG (`04_rainfall.ipynb`)
 - [x] Figure 6: rainfall seasonality, monsoon totals, spatial pattern
 - [x] Step 5: Interactive map on GitHub Pages (`05_interactive_map.ipynb`, [live map](https://makkergauri.github.io/uttarakhand-landslide-risk/))
-- [ ] Figure 1: study area map (India → Uttarakhand → Rudraprayag) ← **next**
-- [ ] Step 6: Technical write-up and comparison with published studies
+- [x] Figure 1: study area map (`06_study_area.ipynb`)
+- [ ] Step 6: Technical write-up and comparison with published studies ← **next**
 
 ## Data sources
 
@@ -164,6 +173,7 @@ the June 2013 check is reassuring, but it isn't a validation against rain gauges
 | `03_model.ipynb` | Random forest with random vs spatial CV, naive vs matched sampling, feature diagnostics, susceptibility map, held-out check, Figures 4–5 |
 | `04_rainfall.ipynb` | Monthly IMERG rainfall, monsoon totals by year, rainfall map, rainfall vs susceptibility, Figure 6 |
 | `05_interactive_map.ipynb` | Converts the susceptibility map into web layers and builds the interactive Folium map |
+| `06_study_area.ipynb` | Study area map: South Asia locator, Uttarakhand districts, Rudraprayag relief, rivers and places (Figure 1) |
 | `docs/index.html` | The interactive map itself (served by GitHub Pages) |
 | `data/training_points_wgs84.geojson` | 76 training points, naive sampling (label 1 = landslide, 0 = no landslide), lat/lon (EPSG:4326) |
 | `data/training_points_matched_wgs84.geojson` | 76 training points, matched sampling (stable points within 3 km of a landslide), lat/lon (EPSG:4326) |
@@ -188,6 +198,7 @@ the June 2013 check is reassuring, but it isn't a validation against rain gauges
    `rudraprayag_susceptibility.tif` and `training_points_matched.geojson` from notebook 03.
 7. For `05_interactive_map.ipynb`: same Drive folder and Earth Engine project (for the district boundary);
    it needs `rudraprayag_susceptibility.tif` and `training_points_matched.geojson` from notebook 03.
+8. For `06_study_area.ipynb`: same Drive folder and Earth Engine project; it needs `rudraprayag_features.tif` from notebook 01.
 
 ## Data citations
 
@@ -199,3 +210,4 @@ the June 2013 check is reassuring, but it isn't a validation against rain gauges
 - Rouse, J. W. et al. (1974). Monitoring vegetation systems in the Great Plains with ERTS (NDVI).
 - Huffman, G. J., Stocker, E. F., Bolvin, D. T., Nelkin, E. J., Tan, J. (2019). GPM IMERG Final Precipitation L3 1 month 0.1° × 0.1° V07. GES DISC. doi:10.5067/GPM/IMERG/3B-MONTH/07
 - Basemaps in the interactive map: Esri World Imagery; © OpenStreetMap contributors; OpenTopoMap (CC-BY-SA).
+
