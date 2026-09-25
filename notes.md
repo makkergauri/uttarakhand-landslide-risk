@@ -100,4 +100,39 @@
 - Fix: for each landslide, one random valid pixel (same terrain mask: elevation < 3500 m, not WorldCover 70/80) within 3 km (fallback 5/10 km), > 500 m from any landslide, seed 42. Pool of 200,000 random valid pixels.
 - Saved as training_points_matched.geojson (EPSG:32644). Original training_points.geojson kept; its results are reported as the naive-sampling comparison.
 - Trade-off: the model now answers a harder, local question (failing slope vs stable slope in the same valley), so a lower AUC is expected and more honest.
-- Matched set results: ____ (fill in from Cell 6 output: radius counts, averages by label)
+- Matched set results: all 38 landslides found a stable partner within 3 km (no fallback needed).
+- Means (landslide vs matched stable): elevation 2506 vs 2649 m; slope 37.2 vs 34.6°; NDVI 0.16 vs 0.59; dist_river 317 vs 687 m.
+- Elevation gap reversed (was +462 m, now −142 m) → regional height difference removed. Dist_river gap halved (763 → 370 m) but remains → part location, part local signal. Slope gap barely changed (~3°).
+- Matched map: stable points now sit next to landslides; south of the district has almost no training points → susceptibility map there will be extrapolation (flag in Figure 5).
+
+### Models on matched points (Cell 7)
+- Same 3 feature sets, same RF settings, 10 repeats. Spatial CV now reports pooled AUC and within-block AUC (AUC computed inside each held-out block, averaged over blocks containing both labels).
+- Coordinates-only model used as the sanity check: ≈ 0.5 means the location shortcut is removed.
+- Results (mean ± std over 10 repeats):
+  - coordinates only: random 0.400 ± 0.040; spatial pooled 0.485 ± 0.028; within-block 0.386 ± 0.026
+  - full (circular): random 0.942 ± 0.007; spatial pooled 0.928 ± 0.005; within-block 0.935 ± 0.004
+  - terrain: random 0.669 ± 0.033; spatial pooled 0.623 ± 0.023; within-block 0.721 ± 0.048
+- Location shortcut removed: coordinates-only ≤ 0.5. Below 0.5 is an artefact of pairing (each landslide's nearest training neighbour is often its own stable partner), not hidden skill.
+- Terrain has a real local signal: within-block AUC ≈ 0.72. This is the headline metric (it matches the question: failing vs stable slope in the same area). Report ~0.62–0.72 across evaluation types; std understates uncertainty (~15 points per block).
+- Circular model still ≈ 0.93–0.94 even with matched points → bare ground marks the scar; NDVI/land cover excluded as predictors.
+- Headline: naive sampling 0.85 → matched, terrain-only, within-block 0.72; circular features 0.95. Many published studies report 0.85–0.95 with random splits/district-wide background points → not directly comparable; don't claim they're wrong.
+
+### Feature diagnostics on matched points (Cell 8)
+- Within-block AUC, 10 repeats: only slope 0.660 ± 0.065; only dist_river 0.669 ± 0.041; only elevation 0.563 ± 0.021; only aspect 0.422 ± 0.006.
+- Without aspect 0.737 ± 0.050; without dist_river 0.716 ± 0.016; without elevation 0.520 ± 0.104; without slope 0.704 ± 0.044 (all terrain 0.721).
+- Slope and distance to river carry the local signal; elevation weak; aspect none.
+- Slope caveat: candidate filter required slope > 25° (landslides guaranteed steep, stable points not) → possible partial circularity. To check: compare using only points with slope > 25°.
+- Dist_river caveat: roads follow rivers; no road layer.
+- Drop-one results unstable (without elevation ± 0.104) → combinations not interpretable at n = 76; report single-feature results.
+- Aspect again looks like noise (without aspect > all terrain), but kept in the main model to avoid tuning on the same data.
+
+### Figure 4 (Cell 9)
+- Changed plan: no ROC curves (pooled ROC would show 0.62 while headline is within-block 0.72 → confusing).
+- (a) Pooled spatial-CV AUC, naive vs matched sampling, for terrain / coordinates-only / circular. (b) Matched set, within-block AUC: all terrain + each feature alone. Error bars = std over 10 repeats. Dashed line = 0.5.
+- Polish: "coin flip" moved into legends (text overlapped a bar); y-ticks limited to 0–1.0; panel (a) value labels moved above error bars (0.49 overlapped its error bar).
+- Saved figures/fig4_model_evaluation.png (300 dpi) + .pdf.
+
+### Publishing Step 3
+- Published matched points as data/training_points_matched_wgs84.geojson (EPSG:4326, Cell 10); Drive copy training_points_matched.geojson stays in UTM.
+- Saved 03_model.ipynb to GitHub; uploaded figures/fig4_model_evaluation.png.
+- README: added Figure 4 section, updated Approach step 4, roadmap, repo structure, Run it step 5.
