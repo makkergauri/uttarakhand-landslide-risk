@@ -43,3 +43,16 @@
 - Points are patch centroids, not initiation points.
 - Circularity: candidates selected by low NDVI + steep slope, which are also model features → compare model with and without NDVI in Step 3.
 - Options to grow inventory: review remaining 30 candidates (change limit to 400), loosen candidate filter, GSI/ULMMC data.
+
+### Publishing (2026-09-25)
+- README updated with Figure 3 section, inventory method, limitations (incl. north clustering), data citations.
+- GitHub's GeoJSON preview showed no points: training_points.geojson is in UTM (EPSG:32644), but GitHub and the GeoJSON standard expect lat/lon. Published a lat/lon copy instead (data/training_points_wgs84.geojson, EPSG:4326). Drive copy stays in UTM for the notebooks.
+- Published data/landslide_review_rudraprayag.geojson (already lat/lon, exported from Earth Engine).
+- Moved published data files into data/ (renamed via GitHub's edit → type "data/" before the file name).
+
+## Step 3: Model (notebook 03_model)
+- Sampled the 6 feature bands at all training points with rasterio `src.sample` (points reprojected to the raster CRS first).
+- Sanity checks: point count, label balance, no points outside the district (elevation 0).
+- Looked at mean elevation, slope, NDVI, distance to river by label, and a land-cover crosstab, before any modelling.
+- Aspect and land cover not averaged (circular and categorical); handled separately.
+- Results of the sanity check: ____ (fill in from Cell 2 output)
