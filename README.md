@@ -77,6 +77,29 @@ and distance to river may partly stand for distance to roads, which follow the r
 Published studies often report AUCs of 0.85–0.95, but with different sampling and validation,
 so the numbers aren't directly comparable.
 
+## Figure 5: Susceptibility map
+
+![Landslide susceptibility map, Rudraprayag](figures/fig5_susceptibility_map.png)
+
+The final terrain-only model scores every 30 m pixel below 3,500 m (about 1,590 km²).
+Scores are **relative**, not probabilities, so the map uses five classes that each cover
+20% of the modelled area.
+
+- **Pattern:** the highest classes follow the river network, especially the valley walls of the
+  Mandakini, the Alaknanda and their tributaries; ridges score low.
+- **Held-out check:** for each of 5 areas, I trained the model without that area and checked where
+  its landslides fell. **87% of held-out landslides** landed in High/Very high (chance: 40%).
+  But so did **66% of nearby stable slopes**. So the map is good at finding *hazardous valley sides*,
+  and only partly separates the slope that fails from its neighbour. With 38 points per group,
+  this gap is suggestive, not conclusive.
+- **Hatched areas** are more than 5 km from any training point (38% of the modelled area, mostly
+  the south). The model is extrapolating there, and the speckled pattern in the south is likely
+  an artefact of that.
+
+> ⚠️ **This is a student research project, not an official hazard map.** It is based on a small,
+> unverified inventory and should not be used for safety or planning decisions.
+> For official information, refer to the Uttarakhand State Disaster Management Authority.
+
 ## Roadmap
 
 - [x] Step 1: Build feature stack in Google Earth Engine (`01_build_features.ipynb`)
@@ -85,8 +108,8 @@ so the numbers aren't directly comparable.
 - [x] Figure 3: landslide inventory map
 - [x] Step 3: Random forest, spatial cross-validation, naive vs matched sampling (`03_model.ipynb`)
 - [x] Figure 4: model evaluation
-- [ ] Figure 5: susceptibility map across the district ← **next**
-- [ ] Step 4: Add monsoon rainfall
+- [x] Figure 5: susceptibility map across the district, with held-out check
+- [ ] Step 4: Add monsoon rainfall ← **next**
 - [ ] Step 5: Interactive map on GitHub Pages
 - [ ] Step 6: Technical write-up and comparison with published studies
 
@@ -108,12 +131,13 @@ so the numbers aren't directly comparable.
 |---|---|
 | `01_build_features.ipynb` | Builds the 6 conditioning factors in Earth Engine and makes Figure 2 |
 | `02_landslide_inventory.ipynb` | Removes duplicate landslides, samples no-landslide points, makes Figure 3 |
-| `03_model.ipynb` | Random forest with random vs spatial CV, naive vs matched sampling, feature diagnostics, Figure 4 |
+| `03_model.ipynb` | Random forest with random vs spatial CV, naive vs matched sampling, feature diagnostics, susceptibility map, held-out check, Figures 4–5 |
 | `data/training_points_wgs84.geojson` | 76 training points, naive sampling (label 1 = landslide, 0 = no landslide), lat/lon (EPSG:4326) |
 | `data/training_points_matched_wgs84.geojson` | 76 training points, matched sampling (stable points within 3 km of a landslide), lat/lon (EPSG:4326) |
 | `data/landslide_review_rudraprayag.geojson` | All 299 saved review decisions (yes / no / unsure) with candidate ID and patch area |
 | `figures/` | Figures for the paper |
 | `notes.md` | Running log of every decision, problem and fix |
+| `requirements.txt` | Python packages used by the notebooks |
 
 ## Run it
 
@@ -134,3 +158,7 @@ so the numbers aren't directly comparable.
 - Grill, G. et al. (2019). Mapping the world's free-flowing rivers. *Nature*, 569, 215–221.
 - FAO (2025). Global Administrative Unit Layers (GAUL) 2025. CC-BY-4.0.
 - Rouse, J. W. et al. (1974). Monitoring vegetation systems in the Great Plains with ERTS (NDVI).
+
+## Acknowledgements
+
+Code scaffolding and project planning developed with help from Claude (Anthropic).
