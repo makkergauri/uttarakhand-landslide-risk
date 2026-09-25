@@ -1,4 +1,4 @@
-# notes.md: Landslide susceptibility mapping, Rudraprayag
+# Landslide susceptibility mapping, Rudraprayag
 
 ## Step 1: Feature stack (notebook 01_build_features)
 - Boundary: FAO/GAUL/2025/level2, ISO3_CODE == "IND", GAUL2_NAME contains "Rudra". (GAUL 2015 is deprecated and uses old names like "Uttaranchal".)
