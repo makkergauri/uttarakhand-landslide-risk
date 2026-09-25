@@ -1,0 +1,10 @@
+# what my notebooks need (Colab already has most of these)
+earthengine-api
+geemap
+numpy
+pandas
+geopandas
+rasterio
+matplotlib
+matplotlib-scalebar
+scikit-learn
