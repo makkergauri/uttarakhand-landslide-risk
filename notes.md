@@ -51,8 +51,53 @@
 - Moved published data files into data/ (renamed via GitHub's edit → type "data/" before the file name).
 
 ## Step 3: Model (notebook 03_model)
+
+### Sampling features at the training points (Cell 2)
 - Sampled the 6 feature bands at all training points with rasterio `src.sample` (points reprojected to the raster CRS first).
 - Sanity checks: point count, label balance, no points outside the district (elevation 0).
 - Looked at mean elevation, slope, NDVI, distance to river by label, and a land-cover crosstab, before any modelling.
 - Aspect and land cover not averaged (circular and categorical); handled separately.
-- Results of the sanity check: ____ (fill in from Cell 2 output)
+- Sanity check results: 76 points (38/38), 0 outside district.
+- Mean by label (landslide vs no landslide): elevation 2506 vs 2044 m; slope 37.2 vs 33.4°; NDVI 0.16 vs 0.62; dist_river 317 vs 1080 m.
+- Land cover (landslide / no landslide): tree 7/27, grass 9/10, built-up 0/1, bare/sparse 21/0, moss/lichen 1/0.
+
+### Circularity and choice of features
+- NDVI and land cover are nearly perfect separators because candidates were selected by NDVI < 0.2 and WorldCover maps fresh scars as bare. They describe the landslide itself, not the pre-failure slope → circularity confirmed.
+- Conditioning factors should describe the slope before failure. Elevation, slope, aspect and distance to river barely change when a slope fails, so they are fair predictors.
+- Decision: main model = terrain-only (elevation, slope, aspect sin/cos, dist_river). Comparison model = terrain + NDVI + land cover, to show how much the circular features inflate performance.
+- Distance to river differs strongly; plausible (toe erosion) but may partly reflect the "streamside slides = yes" review rule.
+- Slope differs only ~4°, because random points in Rudraprayag are already steep.
+
+### Feature preparation and spatial blocks (Cell 3)
+- Aspect → sin/cos (circular: 359° and 1° are both north).
+- Land cover grouped (tree 10 / grass 30 / bare 60 / other) and one-hot encoded; used only in the comparison model.
+- Spatial blocks: k-means (k = 5, random_state 42) on point coordinates; spatial CV holds out one block at a time.
+- Block composition: north blocks mostly landslides, middle block mixed, south blocks almost all no-landslide → out-of-fold predictions pooled across held-out blocks before computing one AUC.
+
+### First models: random CV vs spatial CV (Cell 4)
+- Model: RandomForestClassifier, 300 trees, min_samples_leaf = 2.
+- Evaluation: random 5-fold CV (stratified) vs spatial CV (leave-one-block-out), each repeated 10 times (seeds 0–9; spatial blocks re-drawn with k-means each repeat). Report mean ± std AUC.
+- Feature sets: terrain-only (main), full = terrain + NDVI + land cover (circular comparison), coordinates-only (x, y) as a location baseline to test whether the model just learns geography.
+- Results (AUC mean ± std over 10 repeats):
+  - terrain: random CV 0.841 ± 0.017, spatial CV 0.852 ± 0.004
+  - full (circular): random 0.946 ± 0.005, spatial 0.947 ± 0.004
+  - coordinates only: random 0.791 ± 0.022, spatial 0.829 ± 0.007
+- Unexpected: spatial CV ≥ random CV. Cause: blocks differ strongly in label mix (north mostly landslides, south mostly not), so pooled AUC across held-out blocks mostly rewards separating regions, not discrimination within an area. Pooled spatial AUC here is NOT a fully honest estimate.
+- Key finding: terrain (0.852) only slightly beats coordinates-only (0.829) → much of the model's skill may be location, not slope stability.
+- The std values only reflect block layout; they don't capture uncertainty from the small sample (76 points). Needs a proper uncertainty estimate later (e.g. bootstrap).
+
+### Feature diagnostics (Cell 5)
+- Method: single-feature and drop-one-feature spatial CV (pooled AUC, 10 repeats); aspect sin + cos treated as one feature.
+- Results: only dist_river 0.792; only elevation 0.497; only slope 0.368; only aspect 0.458. Without dist_river 0.591; without elevation 0.784; without slope 0.833; without aspect 0.896 (all terrain 0.852; coordinates only 0.829).
+- Correlation with northing: elevation 0.71, slope 0.12, dist_river −0.48.
+- Interpretation: distance to river carries most of the signal. Plausible (toe erosion) but may partly reflect roads (main roads, incl. the Kedarnath route, follow the river valleys; no road layer used) and the "streamside = yes" review rule. Moderately tied to location (r = −0.48 with northing).
+- Elevation alone ≈ 0.5 (my expectation that it would act as a location proxy was wrong); it only helps in combination with other features.
+- Single-feature AUCs below 0.5 (slope, aspect) reveal a flaw: with label-imbalanced blocks, leave-one-block-out shifts the training base rate opposite to the held-out block's, so pooled AUC is biased (up for location-like features, down for uninformative ones). Pooled spatial CV on the original points is not trustworthy.
+- "Without aspect" > all features, but dropping aspect based on this would be tuning to the same 76 points → noted, not acted on.
+
+### Matched no-landslide sampling (Cell 6)
+- Root problem: landslides and no-landslide points come from different parts of the district → model can take location shortcuts, and spatial CV blocks are label-imbalanced.
+- Fix: for each landslide, one random valid pixel (same terrain mask: elevation < 3500 m, not WorldCover 70/80) within 3 km (fallback 5/10 km), > 500 m from any landslide, seed 42. Pool of 200,000 random valid pixels.
+- Saved as training_points_matched.geojson (EPSG:32644). Original training_points.geojson kept; its results are reported as the naive-sampling comparison.
+- Trade-off: the model now answers a harder, local question (failing slope vs stable slope in the same valley), so a lower AUC is expected and more honest.
+- Matched set results: ____ (fill in from Cell 6 output: radius counts, averages by label)
