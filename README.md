@@ -37,7 +37,8 @@ Boundaries are from FAO GAUL 2025 and are not authoritative; international bound
      and label it landslide / not a landslide / unsure.
 3. **Model:** a random forest learns which combinations of terrain factors are associated with landslides.
 4. **Honest evaluation:** spatial cross-validation (training and testing on *separate areas*),
-   plus checks that the model isn't just learning *where* landslides happen to be in my data.
+   checks that the model isn't just learning *where* landslides happen to be in my data,
+   and results reported across **20 random draws** of stable points instead of one.
 5. **Rainfall:** satellite rainfall (NASA GPM IMERG) to see *when* and *where* the monsoon hits hardest.
 6. **Map:** an interactive susceptibility map anyone can explore.
 
@@ -65,29 +66,34 @@ in the north (upper Mandakini valley), which turned out to matter a lot for the 
 
 ![Model evaluation](figures/fig4_model_evaluation.png)
 
-**The first model looked great, and then fell apart for the right reasons.**
+**Evaluating this model honestly took three rounds, and each one changed the answer.**
 
-- With no-landslide points spread across the whole district, a terrain-only random forest scored
-  **AUC 0.85** under spatial cross-validation. But a model that only knew each point's **map coordinates**
-  scored **0.83**. Because landslides cluster in the north, the model was mostly learning *where*,
-  not *why*.
-- **Fix:** I re-drew the no-landslide points **within 3 km of each landslide** (same valleys, > 500 m
-  from any landslide). Now location gives no advantage: the coordinates-only model drops to ~0.49,
-  a coin flip.
-- On this matched set, the terrain-only model scores **AUC ≈ 0.72** when tested inside held-out areas
-  (within-block AUC, ± 0.05 across 10 repeats; the true uncertainty is larger with only 76 points).
-  That's the honest number: *within the same area*, it ranks the landslide above its stable neighbour
-  about 72% of the time.
-- **Slope** and **distance to river** carry the local signal (~0.66 each on their own); elevation is weak
-  and aspect adds nothing.
+1. **Naive sampling** (stable points anywhere in the district): the terrain-only model scored **AUC 0.85**,
+   but a model that only knew each point's **map coordinates** scored **0.83**. Landslides cluster in the
+   north, so the model was mostly learning *where*, not *why* (panel a).
+2. **Matched sampling** (one stable point within 3 km of each landslide, > 500 m from any landslide):
+   the location shortcut largely disappears, and the question becomes "failing slope vs. stable slope
+   in the same valley".
+3. **One random draw isn't enough.** With only 38 stable points, re-drawing them changes the AUC by
+   up to ±0.15. So every number below is from **20 random draws** (panel b).
+
+**Results (within-area AUC across 20 draws):**
+
+- The terrain-only model scores **about 0.74 on average** (95% of draws: 0.52–0.85). It beats a
+  location-only model in **90% of draws**, by 0.16 on average: it learns something beyond *where*.
+- Requiring stable points to be steeper than 25°, like the landslide candidates, gives
+  **about 0.69** (0.47–0.86). The candidate filter doesn't change the overall result much.
+- **No single feature dominates.** Distance to river (~0.64) and aspect (~0.6) carry modest signal.
+  **Slope alone is near chance** once the filter is accounted for: its earlier apparent signal came from
+  stable points on gentle ground, which the landslide candidates couldn't include by design.
+  Elevation alone is weak.
 - Adding **NDVI and land cover** pushes the score to ~0.93–0.95, but only because the landslides were
   *found* by looking for bare ground. These features describe the scar, not the slope before it failed,
   so they're excluded from the model.
 
-**Caveats:** the slope signal may be partly inflated because candidates had to be steeper than 25°,
-and distance to river may partly stand for distance to roads, which follow the rivers here.
-Published studies often report AUCs of 0.85–0.95, but with different sampling and validation,
-so the numbers aren't directly comparable.
+**Caveats:** distance to river may partly stand for distance to roads, which follow the rivers here.
+The ranges are wide because the inventory is small. Published studies often report AUCs of 0.85–0.95,
+but with different sampling and validation, so the numbers aren't directly comparable.
 
 ## Figure 5: Susceptibility map
 
@@ -107,6 +113,8 @@ Scores are **relative**, not probabilities, so the map uses five classes that ea
 - **Hatched areas** are more than 5 km from any training point (38% of the modelled area, mostly
   the south). The model is extrapolating there, and the speckled pattern in the south is likely
   an artefact of that.
+- **One draw:** this map and the held-out check come from a model trained on a single draw of stable
+  points. Since results vary between draws (Figure 4b), an average over many draws would be more robust.
 
 > ⚠️ **This is a student research project, not an official hazard map.** It is based on a small,
 > unverified inventory and should not be used for safety or planning decisions.
@@ -143,8 +151,8 @@ the June 2013 check is reassuring, but it isn't a validation against rain gauges
 - [x] Figure 2: conditioning factors
 - [x] Step 2: Landslide inventory: 300 candidates reviewed, 38 landslides after deduplication (`02_landslide_inventory.ipynb`)
 - [x] Figure 3: landslide inventory map
-- [x] Step 3: Random forest, spatial cross-validation, naive vs matched sampling (`03_model.ipynb`)
-- [x] Figure 4: model evaluation
+- [x] Step 3: Random forest, spatial cross-validation, naive vs matched sampling, slope check, 20-draw uncertainty (`03_model.ipynb`)
+- [x] Figure 4: model evaluation (v2, across 20 draws)
 - [x] Figure 5: susceptibility map across the district, with held-out check
 - [x] Step 4: Monsoon rainfall with NASA GPM IMERG (`04_rainfall.ipynb`)
 - [x] Figure 6: rainfall seasonality, monsoon totals, spatial pattern
@@ -170,7 +178,7 @@ the June 2013 check is reassuring, but it isn't a validation against rain gauges
 |---|---|
 | `01_build_features.ipynb` | Builds the 6 conditioning factors in Earth Engine and makes Figure 2 |
 | `02_landslide_inventory.ipynb` | Removes duplicate landslides, samples no-landslide points, makes Figure 3 |
-| `03_model.ipynb` | Random forest with random vs spatial CV, naive vs matched sampling, feature diagnostics, susceptibility map, held-out check, Figures 4–5 |
+| `03_model.ipynb` | Random forest with random vs spatial CV, naive vs matched sampling, feature diagnostics, slope circularity check, 20-draw uncertainty, susceptibility map, held-out check, Figures 4–5 |
 | `04_rainfall.ipynb` | Monthly IMERG rainfall, monsoon totals by year, rainfall map, rainfall vs susceptibility, Figure 6 |
 | `05_interactive_map.ipynb` | Converts the susceptibility map into web layers and builds the interactive Folium map |
 | `06_study_area.ipynb` | Study area map: South Asia locator, Uttarakhand districts, Rudraprayag relief, rivers and places (Figure 1) |
@@ -178,6 +186,7 @@ the June 2013 check is reassuring, but it isn't a validation against rain gauges
 | `data/training_points_wgs84.geojson` | 76 training points, naive sampling (label 1 = landslide, 0 = no landslide), lat/lon (EPSG:4326) |
 | `data/training_points_matched_wgs84.geojson` | 76 training points, matched sampling (stable points within 3 km of a landslide), lat/lon (EPSG:4326) |
 | `data/landslide_review_rudraprayag.geojson` | All 299 saved review decisions (yes / no / unsure) with candidate ID and patch area |
+| `data/auc_across_draws.csv` | Within-block AUC for every test, design and draw (20 draws of stable points) |
 | `data/rainfall_monthly_rudraprayag.csv` | District-average monthly rainfall, 1998-01 to 2025-09 (mm) |
 | `data/rainfall_monsoon_totals.csv` | June–September rainfall totals per year, 1998–2025 (mm and % vs average) |
 | `figures/` | Figures for the paper |
@@ -194,6 +203,7 @@ the June 2013 check is reassuring, but it isn't a validation against rain gauges
    then run the notebook in Colab.
 5. For `03_model.ipynb`: same Drive folder, plus `training_points.geojson` from notebook 02
    (or `data/training_points_wgs84.geojson` renamed; the notebook reprojects it automatically).
+   The 20-draw analysis (Cells 15–16) takes about 10–15 minutes.
 6. For `04_rainfall.ipynb`: same Drive folder and Earth Engine project; it also needs
    `rudraprayag_susceptibility.tif` and `training_points_matched.geojson` from notebook 03.
 7. For `05_interactive_map.ipynb`: same Drive folder and Earth Engine project (for the district boundary);
@@ -210,4 +220,3 @@ the June 2013 check is reassuring, but it isn't a validation against rain gauges
 - Rouse, J. W. et al. (1974). Monitoring vegetation systems in the Great Plains with ERTS (NDVI).
 - Huffman, G. J., Stocker, E. F., Bolvin, D. T., Nelkin, E. J., Tan, J. (2019). GPM IMERG Final Precipitation L3 1 month 0.1° × 0.1° V07. GES DISC. doi:10.5067/GPM/IMERG/3B-MONTH/07
 - Basemaps in the interactive map: Esri World Imagery; © OpenStreetMap contributors; OpenTopoMap (CC-BY-SA).
-
