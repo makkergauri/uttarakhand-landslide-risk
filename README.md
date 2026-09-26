@@ -1,5 +1,6 @@
 # Landslide Risk Mapping in Uttarakhand 🏔️
 
+> 🚧 **In progress.** Built in the open.
 
 Every monsoon, landslides in Uttarakhand block highways, cut off villages and cost lives.
 This project uses **free satellite data and machine learning** to map *where* slopes are
@@ -51,7 +52,8 @@ No usable landslide inventory was reachable for Rudraprayag, so I built a prelim
 - **Candidates:** Sentinel-2 (Oct–Dec 2025) pixels with NDVI < 0.2, slope > 25°, below 3,500 m,
   not snow/ice or water, grouped into patches of 0.2–20 ha → **330 candidate patches**.
 - **Manual review:** 300 randomly sampled candidates checked one by one on high-resolution
-  satellite imagery → **42 landslides, 190 not landslides, 68 unsure**.
+  satellite imagery → **42 landslides, 190 not landslides, 68 unsure** (the last "unsure" wasn't saved,
+  so the published file has 299 decisions: 42 / 190 / 67).
 - **Deduplication:** landslide points within 200 m of each other merged → **38 landslides**.
 - **No-landslide points:** 38 random points in the same terrain (below 3,500 m, not snow/water),
   at least 500 m from any landslide.
@@ -87,7 +89,7 @@ in the north (upper Mandakini valley), which turned out to matter a lot for the 
   **Slope alone is near chance** once the filter is accounted for: its earlier apparent signal came from
   stable points on gentle ground, which the landslide candidates couldn't include by design.
   Elevation alone is weak.
-- Adding **NDVI and land cover** pushes the score to ~0.93–0.95, but only because the landslides were
+- Adding **NDVI and land cover** pushes the score to 0.93–0.95, but only because the landslides were
   *found* by looking for bare ground. These features describe the scar, not the slope before it failed,
   so they're excluded from the model.
 
@@ -159,7 +161,7 @@ the June 2013 check is reassuring, but it isn't a validation against rain gauges
 - [x] Figure 6: rainfall seasonality, monsoon totals, spatial pattern
 - [x] Step 5: Interactive map on GitHub Pages (`05_interactive_map.ipynb`, [live map](https://makkergauri.github.io/uttarakhand-landslide-risk/))
 - [x] Figure 1: study area map (`06_study_area.ipynb`)
-- [ ] Step 6: Technical write-up and comparison with published studies ← **next**
+- [ ] Step 6: Technical write-up and comparison with published studies ← **in progress**
 
 ## Data sources
 
@@ -186,7 +188,7 @@ the June 2013 check is reassuring, but it isn't a validation against rain gauges
 | `docs/index.html` | The interactive map itself (served by GitHub Pages) |
 | `data/training_points_wgs84.geojson` | 76 training points, naive sampling (label 1 = landslide, 0 = no landslide), lat/lon (EPSG:4326) |
 | `data/training_points_matched_wgs84.geojson` | 76 training points, matched sampling (stable points within 3 km of a landslide), lat/lon (EPSG:4326) |
-| `data/landslide_review_rudraprayag.geojson` | All 299 saved review decisions (yes / no / unsure) with candidate ID and patch area |
+| `data/landslide_review_rudraprayag.geojson` | The 299 saved review decisions (42 yes / 190 no / 67 unsure) with candidate ID and patch area |
 | `data/auc_across_draws.csv` | Within-block AUC for every test, design and draw (20 draws of stable points) |
 | `data/rainfall_monthly_rudraprayag.csv` | District-average monthly rainfall, 1998-01 to 2025-09 (mm) |
 | `data/rainfall_monsoon_totals.csv` | June–September rainfall totals per year, 1998–2025 (mm and % vs average) |
