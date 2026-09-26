@@ -1,6 +1,5 @@
 # Landslide Risk Mapping in Uttarakhand 🏔️
 
-> 🚧 **In progress.** Built in the open.
 
 Every monsoon, landslides in Uttarakhand block highways, cut off villages and cost lives.
 This project uses **free satellite data and machine learning** to map *where* slopes are
