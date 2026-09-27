@@ -8,7 +8,7 @@ most likely to fail in **Rudraprayag district**, and *when* heavy rainfall pushe
 🗺️ **[Explore the interactive map →](https://makkergauri.github.io/uttarakhand-landslide-risk/)**
 Zoom in, switch layers, and click any landslide to check it on satellite imagery yourself.
 
-📄 **Preprint:** [Where do slopes fail in Rudraprayag? (EarthArXiv, 2026)](https://doi.org/10.31223/X5KB9J), not peer-reviewed.
+📄 **Preprint:** [Where do slopes fail in Rudraprayag? (EarthArXiv, 2026)](https://eartharxiv.org/repository/view/15237/), not peer-reviewed.
 
 ![Landslide conditioning factors, Rudraprayag](figures/fig2_conditioning_factors.png)
 
